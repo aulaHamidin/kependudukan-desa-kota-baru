@@ -1,0 +1,28 @@
+/* ==================== ANIMATIONS ==================== */
+@layer utilities {
+    .animate-fade-in {
+        animation: fade-in 200ms ease-out forwards;
+    }
+
+    .skeleton {
+        @apply relative overflow-hidden bg-gray-200 rounded;
+    }
+
+    .skeleton::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        animation: skeleton-shimmer 1.2s infinite;
+    }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes skeleton-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}

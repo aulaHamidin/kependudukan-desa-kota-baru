@@ -1,0 +1,20 @@
+/* ==================== TYPOGRAPHY ==================== */
+@layer components {
+    /* Data sensitif kependudukan */
+    .data-nik,
+    .data-nokk,
+    .data-nosurat {
+        @apply font-mono text-sm tracking-wider tabular-nums;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .data-nik {
+        @apply text-gray-800 bg-gray-100 px-2 py-0.5 rounded;
+    }
+    .data-nokk {
+        @apply text-primary-700;
+    }
+    .data-nosurat {
+        @apply text-village-700 text-xs;
+    }
+}

@@ -1,0 +1,34 @@
+/* ==================== STAT CARDS ==================== */
+@layer components {
+
+    /* Stat Card Base - Clean admin panel style */
+    .stat-card {
+        @apply bg-white rounded-md p-4 border border-gray-200
+               flex items-center gap-4 shadow-sm;
+    }
+.stat-card-village {
+        @apply bg-white rounded-md p-4 border border-gray-200
+               flex items-center gap-4 shadow-sm border-l-4 border-l-village-500;
+    }
+.stat-card-danger {
+        @apply bg-white rounded-md p-4 border border-gray-200
+               flex items-center gap-4 shadow-sm border-l-4 border-l-danger-500;
+    }
+/* Stat Icon - Rounded square */
+    .stat-icon {
+        @apply w-12 h-12 rounded-md flex items-center justify-center;
+    }
+
+    .stat-icon-primary {
+        @apply bg-primary-100 text-primary-600;
+    }
+.stat-icon-village {
+        @apply bg-village-100 text-village-600;
+    }
+.stat-icon-danger {
+        @apply bg-danger-100 text-danger-600;
+    }
+.stat-icon-earth {
+        @apply bg-earth-100 text-earth-600;
+    }
+}

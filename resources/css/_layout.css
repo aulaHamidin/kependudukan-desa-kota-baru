@@ -1,0 +1,67 @@
+/* ==================== LAYOUT ==================== */
+@layer components {
+
+    /* ----------------------------------------
+     * SIDEBAR
+     * Dark sidebar like AdminLTE / SB Admin
+     * ---------------------------------------- */
+    .sidebar-glass {
+        background: linear-gradient(180deg, #003580 0%, #002a6b 100%);
+        @apply border-r border-blue-900;
+    }
+
+    /* Sidebar States */
+    /* Mobile: hidden by default */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mobile: show when open */
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Desktop: show by default */
+    @media (min-width: 1024px) {
+        .sidebar {
+            transform: translateX(0);
+        }
+        
+        /* Desktop: hide when collapsed */
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        /* Main content margin when sidebar is open */
+        #main-content {
+            margin-left: 16rem;
+            transition: margin-left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Main content no margin when sidebar is collapsed */
+        #main-content.sidebar-collapsed {
+            margin-left: 0;
+        }
+    }
+/* ----------------------------------------
+     * NAV ITEM
+     * Standard admin sidebar nav link
+     * ---------------------------------------- */
+    .nav-item {
+        @apply flex items-center gap-3 px-4 py-2 rounded-md text-[0.8125rem] font-medium
+               text-blue-100 hover:bg-white/15 hover:text-white
+               transition-colors duration-150;
+    }
+/* ----------------------------------------
+     * NAV ACTIVE
+     * Active navigation state
+     * ---------------------------------------- */
+    .nav-active {
+        @apply bg-white/20 text-white;
+    }
+
+    .nav-active:hover {
+        @apply bg-white/25 text-white;
+    }
+}

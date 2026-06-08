@@ -1,0 +1,38 @@
+/* ==================== FONTS ==================== */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+/* ==================== PARTIALS ==================== */
+
+/* Core */
+@import './_base.css';
+@import './_typography.css';
+
+/* Layout & Navigation */
+@import './_layout.css';
+@import './_responsive.css';
+
+/* Components */
+@import './_cards.css';
+@import './_badges.css';
+@import './_buttons.css';
+@import './_forms.css';
+@import './_tables.css';
+@import './_stat-cards.css';
+@import './_modals.css';
+
+/* Utilities */
+@import './_utilities.css';
+@import './_animations.css';
+
+/* Print */
+@import './_print.css';
+
+/* Third-party Plugin Overrides */
+@import './_datatables.css';
+@import './_tom-select.css';
+@import './_flatpickr.css';
+
+/* ==================== TAILWIND ==================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

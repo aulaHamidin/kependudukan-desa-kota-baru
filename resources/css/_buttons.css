@@ -1,0 +1,82 @@
+/* ==================== BUTTONS ==================== */
+@layer components {
+
+    /* BTN Base - Bootstrap-like */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 font-medium
+               text-sm px-4 py-2 rounded-md border transition-all duration-150
+               focus:outline-none focus:ring-2 focus:ring-offset-2;
+    }
+
+    /* BTN PRIMARY */
+    .btn-primary {
+        @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+               text-white border-primary-600 hover:border-primary-700
+               shadow-sm focus:ring-primary-500;
+    }
+/* BTN SECONDARY */
+    .btn-secondary {
+        @apply bg-white border-gray-300 hover:bg-gray-50
+               text-gray-700 shadow-sm focus:ring-primary-500;
+    }
+/* BTN DANGER */
+    .btn-danger {
+        @apply bg-danger-600 hover:bg-danger-700 active:bg-danger-800
+               text-white border-danger-600 hover:border-danger-700
+               shadow-sm focus:ring-danger-500;
+    }
+/* BTN WARNING */
+    .btn-warning {
+        @apply bg-earth-500 hover:bg-earth-600 active:bg-earth-700
+               text-white border-earth-500 hover:border-earth-600
+               shadow-sm focus:ring-earth-400;
+    }
+/* BTN VILLAGE / SUCCESS */
+    .btn-village {
+        @apply bg-village-600 hover:bg-village-700 active:bg-village-800
+               text-white border-village-600 hover:border-village-700
+               shadow-sm focus:ring-village-500;
+    }
+/* BTN GHOST / LINK */
+    .btn-ghost {
+        @apply bg-transparent border-transparent text-gray-600
+               hover:bg-gray-100 hover:text-gray-800 shadow-none
+               focus:ring-gray-400;
+    }
+
+    /* ===== ACTION ICON BUTTONS (Table Aksi Column) ===== */
+    .btn-action {
+        @apply inline-flex items-center justify-center p-1.5 rounded-lg
+               transition-all duration-150 border border-transparent;
+    }
+
+    /* View / Detail — primary blue */
+    .btn-action-view {
+        @apply text-primary-600 bg-primary-50
+               hover:text-white hover:bg-primary-600 hover:border-primary-600;
+    }
+
+    /* Edit — amber / warning */
+    .btn-action-edit {
+        @apply text-amber-600 bg-amber-50
+               hover:text-white hover:bg-amber-500 hover:border-amber-500;
+    }
+
+    /* Delete / Reject — red / danger */
+    .btn-action-delete {
+        @apply text-red-600 bg-red-50
+               hover:text-white hover:bg-red-600 hover:border-red-600;
+    }
+
+    /* Approve — green */
+    .btn-action-approve {
+        @apply text-green-600 bg-green-50
+               hover:text-white hover:bg-green-600 hover:border-green-600;
+    }
+
+    /* Verify / Restore / Activate — emerald */
+    .btn-action-verify {
+        @apply text-emerald-600 bg-emerald-50
+               hover:text-white hover:bg-emerald-600 hover:border-emerald-600;
+    }
+}

@@ -1,0 +1,48 @@
+/* ==================== TABLES (AdminLTE / Bootstrap Style) ==================== */
+@layer components {
+
+    /* Table Wrapper - Bootstrap card-style */
+    .table-wrapper {
+        @apply overflow-hidden rounded-md border border-gray-200 bg-white;
+    }
+
+    table {
+        @apply w-full text-left text-sm text-gray-700;
+        border-collapse: collapse;
+    }
+
+    /* Table Header - AdminLTE style: solid bg, compact, bold borders */
+    table thead th,
+    .table-header {
+        @apply px-3 py-2.5 bg-gray-100 text-xs font-bold text-gray-600
+               uppercase tracking-wider border-b-2 border-gray-300;
+    }
+
+    /* Table Cell - Compact with consistent borders */
+    table tbody td,
+    .table-cell {
+        @apply px-3 py-2.5 text-sm text-gray-700 border-b border-gray-200;
+        vertical-align: middle;
+    }
+
+    /* Zebra Striping - Bootstrap striped-table style */
+    table tbody tr:nth-child(even) {
+        @apply bg-gray-50;
+    }
+
+    table tbody tr:nth-child(odd) {
+        @apply bg-white;
+    }
+
+    /* Table Row Hover - AdminLTE hover: subtle highlight */
+    table tbody tr:hover,
+    .table-row-hover:hover {
+        @apply bg-blue-50 transition-colors duration-150;
+    }
+
+    /* Bordered variant - full grid */
+    .table-bordered th,
+    .table-bordered td {
+        @apply border border-gray-200;
+    }
+}

@@ -1,0 +1,142 @@
+/* ==================== DATATABLES (AdminLTE / Bootstrap Style) ==================== */
+    /* DataTable wrapper - clean card style like AdminLTE */
+    .dataTable-wrapper, 
+    .datatable-wrapper {
+        @apply text-sm text-gray-700 bg-white border border-gray-200 rounded-md overflow-hidden;
+    }
+
+    /* Top & Bottom bars - compact like Bootstrap DataTables */
+    .dataTable-top, .datatable-top,
+    .dataTable-bottom, .datatable-bottom {
+        @apply px-4 py-3 bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3;
+    }
+
+    .dataTable-top, .datatable-top {
+        @apply border-b border-gray-200 bg-gray-50;
+    }
+
+    .dataTable-bottom, .datatable-bottom {
+        @apply border-t border-gray-200 bg-gray-50;
+    }
+
+    /* Control Layout - AdminLTE order */
+    .dataTable-top .dataTable-dropdown, .datatable-top .datatable-dropdown { @apply order-1; }
+    .dataTable-top .dataTable-search, .datatable-top .datatable-search { @apply order-2 sm:ml-auto; }
+    
+    .dataTable-bottom .dataTable-info, .datatable-bottom .datatable-info { @apply order-1 text-sm text-gray-600; }
+    .dataTable-bottom .dataTable-pagination, .datatable-bottom .datatable-pagination { @apply order-2 sm:ml-auto; }
+
+    /* Dropdown labels - "Show ___ entries" Bootstrap style */
+    .dataTable-dropdown label, .datatable-dropdown label {
+        @apply text-sm text-gray-600 flex items-center gap-2;
+    }
+
+    /* Inputs & Selectors - Bootstrap form-control style */
+    .dataTable-input, .datatable-input,
+    .dataTable-selector, .datatable-selector {
+        @apply border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-700 bg-white 
+               transition-colors duration-150 outline-none;
+    }
+
+    .dataTable-input:focus, .datatable-input:focus,
+    .dataTable-selector:focus, .datatable-selector:focus {
+        @apply border-blue-500 ring-2 ring-blue-200;
+    }
+
+    /* Search Input - Bootstrap style */
+    .dataTable-search .dataTable-input,
+    .datatable-search .datatable-input {
+        @apply min-w-[180px];
+    }
+
+    .dataTable-search label, .datatable-search label {
+        @apply text-sm text-gray-600 flex items-center gap-2;
+    }
+
+    /* Pagination - Bootstrap pagination style */
+    .dataTable-pagination ul, .datatable-pagination ul {
+        @apply flex items-center gap-0;
+    }
+
+    .dataTable-pagination li, .datatable-pagination li {
+        @apply inline-block;
+    }
+
+    .dataTable-pagination a, 
+    .datatable-pagination a {
+        @apply inline-flex items-center justify-center px-3 py-1.5 min-w-[34px] text-sm 
+               font-normal text-gray-700 bg-white border border-gray-300
+               hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150;
+        margin-left: -1px;
+    }
+
+    .dataTable-pagination li:first-child a,
+    .datatable-pagination li:first-child a {
+        @apply rounded-l;
+    }
+
+    .dataTable-pagination li:last-child a,
+    .datatable-pagination li:last-child a {
+        @apply rounded-r;
+    }
+
+    /* Active Pagination - Bootstrap primary */
+    .dataTable-pagination .active a, 
+    .datatable-pagination .active a {
+        @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white z-10;
+    }
+
+    /* Disabled Pagination */
+    .dataTable-pagination .disabled a,
+    .datatable-pagination .disabled a {
+        @apply text-gray-400 bg-gray-50 cursor-not-allowed hover:bg-gray-50 hover:text-gray-400;
+    }
+
+    /* Ellipsis */
+    .dataTable-pagination .ellipsis,
+    .datatable-pagination .ellipsis {
+        @apply inline-flex items-center justify-center px-2 py-1.5 text-sm text-gray-500;
+    }
+
+    /* Empty State */
+    .dataTable-empty, .datatable-empty {
+        @apply text-center py-6 text-gray-500;
+    }
+
+    /* Fix for external search containers */
+    [data-datatable-search-for] .datatable-search {
+        @apply float-none block w-auto;
+    }
+
+    /* Sort header arrows - AdminLTE style */
+    .dataTable-sorter, .datatable-sorter {
+        @apply cursor-pointer select-none relative pr-4;
+    }
+
+    .dataTable-sorter::before,
+    .dataTable-sorter::after,
+    .datatable-sorter::before,
+    .datatable-sorter::after {
+        content: '';
+        @apply absolute right-0 border-4 border-transparent opacity-30;
+    }
+
+    .dataTable-sorter::before, .datatable-sorter::before {
+        border-bottom-color: #6b7280;
+        top: 4px;
+    }
+
+    .dataTable-sorter::after, .datatable-sorter::after {
+        border-top-color: #6b7280;
+        bottom: 4px;
+    }
+
+    .asc .dataTable-sorter::before, .asc .datatable-sorter::before {
+        @apply opacity-100;
+        border-bottom-color: #2563eb;
+    }
+
+    .desc .dataTable-sorter::after, .desc .datatable-sorter::after {
+        @apply opacity-100;
+        border-top-color: #2563eb;
+    }

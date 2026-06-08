@@ -1,0 +1,49 @@
+/* ==================== CARDS ==================== */
+@layer components {
+
+    /* Card Base - Bootstrap-style */
+    .card {
+        @apply bg-white rounded-md border border-gray-200 shadow-sm;
+    }
+.card-hover {
+        @apply hover:shadow-md transition-shadow duration-200 cursor-pointer;
+    }
+
+    /* STATUS: PRIMARY */
+    .card-primary {
+        @apply bg-white border-l-4 border-l-primary-500 border-y border-r border-y-gray-200 border-r-gray-200;
+    }
+    .card-primary:hover, .card-hover-primary:hover {
+        @apply shadow-md cursor-pointer;
+    }
+/* STATUS: SUCCESS / VILLAGE */
+    .card-success, .card-village {
+        @apply bg-white border-l-4 border-l-village-500 border-y border-r border-y-gray-200 border-r-gray-200;
+    }
+    .card-success:hover, .card-village:hover, .card-hover-success:hover {
+        @apply shadow-md cursor-pointer;
+    }
+
+    /* STATUS: WARNING / EARTH */
+    .card-warning, .card-earth {
+        @apply bg-white border-l-4 border-l-earth-500 border-y border-r border-y-gray-200 border-r-gray-200;
+    }
+    .card-warning:hover, .card-earth:hover, .card-hover-warning:hover {
+        @apply shadow-md cursor-pointer;
+    }
+
+    /* STATUS: DANGER */
+    .card-danger {
+        @apply bg-white border-l-4 border-l-danger-500 border-y border-r border-y-gray-200 border-r-gray-200;
+    }
+    .card-danger:hover, .card-hover-danger:hover {
+        @apply shadow-md cursor-pointer;
+    }
+/* STATUS: NEUTRAL */
+    .card-neutral {
+        @apply bg-white border border-gray-200;
+    }
+    .card-neutral:hover, .card-hover-neutral:hover {
+        @apply shadow-md cursor-pointer;
+    }
+}

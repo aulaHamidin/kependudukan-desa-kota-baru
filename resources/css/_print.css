@@ -1,0 +1,21 @@
+/* ==================== PRINT ==================== */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    .dataTable-top {
+        @apply hidden;
+    }
+
+    .print-document {
+        @apply text-black bg-white;
+        font-family: 'Times New Roman', serif;
+    }
+
+    .data-nik,
+    .data-nokk,
+    .data-nosurat {
+        font-family: 'JetBrains Mono', monospace !important;
+        letter-spacing: 0.1em;
+    }
+}

@@ -1,0 +1,96 @@
+/* ==================== UTILITIES ==================== */
+@layer utilities {
+
+    /* Scrollbar - thin */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        overflow-y: auto;
+    }
+
+    /* Scrollbar always visible */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        transition: background 0.2s;
+    }
+
+    /* Scrollbar on hover - slightly brighter */
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Scrollbar when actively scrolling */
+    .scrollbar-thin::-webkit-scrollbar-thumb:active {
+        background: rgba(255, 255, 255, 0.3);
+    }
+/* Pulse dot indicator */
+    .animate-pulse-dot {
+        animation: pulse-dot 3s infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50%       { transform: scale(1.2); opacity: 0.8; }
+    }
+
+    /* Avatar ring */
+    .avatar-ring {
+        box-shadow: 0 0 0 2px white, 0 0 0 4px theme('colors.primary.500');
+    }
+/* Glass effect */
+    .glass {
+        @apply bg-white border border-gray-200 shadow-lg;
+    }
+/* Accent blocks - border-left style (Bootstrap alert-like) */
+    .accent-village {
+        @apply bg-village-50 border-l-4 border-village-500 p-4 rounded-r;
+    }
+.accent-earth {
+        @apply bg-earth-50 border-l-4 border-earth-500 p-4 rounded-r;
+    }
+.accent-primary {
+        @apply bg-primary-50 border-l-4 border-primary-500 p-4 rounded-r;
+    }
+.accent-danger {
+        @apply bg-danger-50 border-l-4 border-danger-500 p-4 rounded-r;
+    }
+.info-box {
+        @apply bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r;
+    }
+/* Stamp official */
+    .stamp-official {
+        @apply relative;
+    }
+
+    .stamp-official::after {
+        content: '';
+        @apply absolute inset-0 bg-primary-600/5 rounded pointer-events-none;
+        background-image: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            theme('colors.primary.600 / 0.02') 10px,
+            theme('colors.primary.600 / 0.02') 20px
+        );
+    }
+
+    /* Text color utilities */
+    .text-primary-brand  { @apply text-primary-600; }
+    .text-village-brand  { @apply text-village-600; }
+    .text-danger-brand   { @apply text-danger-600; }
+    .text-earth-brand    { @apply text-earth-600; }
+
+    /* Dividers */
+    .divider         { @apply border-t border-gray-200; }
+    .divider-primary { @apply border-t-2 border-primary-200; }
+    .divider-village { @apply border-t-2 border-village-200; }
+}

@@ -1,0 +1,47 @@
+/* ==================== BADGES ==================== */
+@layer components {
+
+    /* Badge Base - Bootstrap-style pill */
+    .badge {
+        @apply text-xs font-medium px-2.5 py-1 rounded-full inline-flex items-center;
+    }
+
+    /* Status: Aktif */
+    .badge-aktif {
+        @apply bg-village-100 text-village-800;
+    }
+/* Status: Pindah */
+    .badge-pindah {
+        @apply bg-earth-100 text-earth-800;
+    }
+/* Status: Meninggal */
+    .badge-meninggal {
+        @apply bg-gray-100 text-gray-700;
+    }
+/* Status: Pending */
+    .badge-pending {
+        @apply bg-primary-100 text-primary-800;
+    }
+/* Badge Danger */
+    .badge-danger {
+        @apply bg-danger-100 text-danger-700;
+    }
+/* Badge Village */
+    .badge-village {
+        @apply bg-village-100 text-village-700;
+    }
+/* Badge Earth */
+    .badge-earth {
+        @apply bg-earth-100 text-earth-700;
+    }
+
+    /* Jenis Kelamin: Laki-laki */
+    .badge-laki {
+        @apply bg-blue-100 text-blue-700;
+    }
+
+    /* Jenis Kelamin: Perempuan */
+    .badge-perempuan {
+        @apply bg-pink-100 text-pink-700;
+    }
+}

@@ -1,0 +1,16 @@
+/* ==================== BASE STYLES ==================== */
+@layer base {
+    * {
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+        @apply bg-gray-100 text-gray-800;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+h1, h2, h3, h4, h5, h6 {
+        @apply font-semibold text-gray-900;
+        line-height: 1.2;
+    }
+}

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan test tests/Unit/Actions/CreateEventKelahiranActionTest.php tests/Unit/Actions/CreateEventKematianActionTest.php tests/Unit/Actions/CreateEventPindahActionTest.php --no-coverage)",
+      "Bash(php artisan tinker --execute=\":*)",
+      "Bash(php artisan test tests/Unit/Actions/CreateEventKelahiranActionTest.php --no-coverage)",
+      "Bash(php artisan test --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Event/DatangServiceTest.php tests/Unit/Services/Event/KematianServiceTest.php tests/Unit/Services/Event/PindahServiceTest.php --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Event/KematianServiceTest.php --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Event/EventVoidServiceTest.php --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Import/PendudukImportServiceTest.php --no-coverage)",
+      "Bash(mysql -u root -e \"SHOW DATABASES LIKE ''kependudukan%'';\")",
+      "Bash(php artisan test tests/Unit/Services/PendudukServiceTest.php --no-coverage)",
+      "Bash(php artisan test --filter=\"test_satu_baris_valid_sukses\" --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Import/PendudukImportServiceTest.php --filter=\"validate_satu_baris_valid\" --no-coverage)",
+      "Bash(php artisan test tests/Unit/Services/Import/ --no-coverage)",
+      "Bash(php artisan test tests/Unit/Actions/ tests/Unit/Services/Event/ tests/Unit/Services/Import/ tests/Unit/Services/KkMemberServiceTest.php tests/Unit/Services/KartuKeluargaServiceTest.php tests/Unit/Services/ApprovalServiceTest.php tests/Unit/Services/PendudukServiceTest.php --no-coverage)",
+      "Bash(php artisan test tests/Unit/Models/SuratSequenceTest.php --no-coverage)",
+      "Bash(php artisan test tests/Unit/Policies/SuratTerbitPolicyTest.php --no-coverage)",
+      "Bash(grep -n \"pdf_status\" database/migrations/*.php)",
+      "Bash(php artisan test tests/Feature/Event/ApprovalWorkflowTest.php --no-coverage)",
+      "Bash(php artisan test tests/Feature/Event/ApprovalWorkflowTest.php --no-coverage --filter=\"viewer_cannot\")",
+      "Bash(php artisan test tests/Feature/Auth/RegistrationTest.php --no-coverage)",
+      "Bash(php artisan test tests/Feature/ProfileTest.php --no-coverage)",
+      "Bash(php artisan test Tests/Feature/TerritoryScope/SuratTerbitTerritoryScopeTest --no-coverage)",
+      "Bash(php artisan test --filter SuratTerbitTerritoryScopeTest --no-coverage)"
+    ]
+  }
+}

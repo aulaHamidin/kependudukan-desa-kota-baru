@@ -1,0 +1,99 @@
+/* ==================== TOM SELECT ==================== */
+
+
+/* Wrapper - selaras dengan form-input-custom */
+.tom-select .ts-wrapper,
+.ts-wrapper {
+    @apply w-full border border-primary-300 rounded-md bg-white transition-colors shadow-sm outline-none;
+}
+
+.tom-select .ts-wrapper:hover,
+.ts-wrapper:hover { @apply border-primary-400 bg-primary-50; }
+
+/* Focus */
+
+.tom-select .ts-wrapper.focus,
+.tom-select .ts-wrapper:focus-within,
+.ts-wrapper.focus,
+.ts-wrapper:focus-within { @apply border-primary-500 ring-2 ring-primary-200; }
+
+/* Error state */
+.tom-select .ts-wrapper.has-error,
+.ts-wrapper.has-error       { @apply border-danger-500; }
+.tom-select .ts-wrapper.has-error.focus,
+.ts-wrapper.has-error.focus { @apply border-danger-500 ring-2 ring-danger-200; }
+
+/* Control */
+.tom-select .ts-control,
+.ts-control {
+    @apply w-full bg-transparent border-0 rounded-md px-3 py-2 text-sm text-gray-800 min-h-[38px] outline-none transition-colors;
+    box-shadow: none !important;
+}
+
+.tom-select .ts-control:focus,
+.tom-select .ts-control:focus-within,
+.ts-control:focus,
+.ts-control:focus-within { @apply outline-none ring-0; }
+
+.tom-select .ts-control input,
+.ts-control input       { @apply text-sm leading-5 text-gray-800 placeholder:text-gray-400; }
+.tom-select .ts-control > .item,
+.ts-control > .item     { @apply bg-transparent text-gray-800 text-sm leading-5; }
+
+/* Dropdown */
+.tom-select .ts-dropdown,
+.ts-dropdown {
+    @apply border border-gray-300 rounded-md shadow-lg mt-1 bg-white z-50;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.tom-select .ts-dropdown .ts-dropdown-content,
+.ts-dropdown .ts-dropdown-content { @apply p-1; }
+
+.tom-select .ts-dropdown .option,
+.ts-dropdown .option {
+    @apply px-3 py-2 rounded text-sm text-gray-700 cursor-pointer transition-colors;
+}
+
+.tom-select .ts-dropdown .option:hover,
+.tom-select .ts-dropdown .option.active,
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active   { @apply bg-primary-50 text-primary-700; }
+.tom-select .ts-dropdown .option.selected,
+.ts-dropdown .option.selected { @apply bg-primary-100 text-primary-800; }
+
+/* Custom option with subtitle */
+.ts-option-custom   { @apply flex flex-col gap-0.5; }
+.ts-option-label    { @apply text-sm font-medium text-gray-700; }
+.ts-option-subtitle { @apply text-xs text-gray-500; }
+
+.tom-select .ts-dropdown .option:hover .ts-option-label,
+.tom-select .ts-dropdown .option.active .ts-option-label,
+.ts-dropdown .option:hover .ts-option-label,
+.ts-dropdown .option.active .ts-option-label    { @apply text-primary-700; }
+
+.tom-select .ts-dropdown .option:hover .ts-option-subtitle,
+.tom-select .ts-dropdown .option.active .ts-option-subtitle,
+.ts-dropdown .option:hover .ts-option-subtitle,
+.ts-dropdown .option.active .ts-option-subtitle { @apply text-primary-600; }
+
+.tom-select .ts-dropdown .no-results,
+.tom-select .ts-dropdown .ts-loading,
+.ts-dropdown .no-results,
+.ts-dropdown .ts-loading { @apply px-3 py-4 text-sm text-gray-500 text-center; }
+
+.tom-select .ts-control .clear-button,
+.ts-control .clear-button {
+    @apply text-gray-400 hover:text-gray-600 absolute right-8 top-1/2 -translate-y-1/2;
+}
+
+.tom-select .ts-control::after,
+.ts-control::after { @apply border-gray-400; }
+
+.tom-select .ts-wrapper.disabled,
+.ts-wrapper.disabled          { @apply bg-gray-100 opacity-60 cursor-not-allowed; }
+.tom-select .ts-wrapper.disabled .ts-control,
+.ts-wrapper.disabled .ts-control { @apply cursor-not-allowed; }
+
+/* ==================== DARK MODE ==================== */
