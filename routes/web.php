@@ -165,10 +165,14 @@ Route::middleware(['auth', 'verified', 'active'])->group(function () {
     // Surat Management
     Route::prefix('surat')->name('surat.')->group(function () {
         Route::resource('terbit', SuratTerbitController::class)
+            ->only(['index', 'create', 'store', 'show'])
             ->parameters(['terbit' => 'suratTerbit']);
+        Route::get('jenis-surat/{kode}', [SuratTerbitController::class, 'getJenisSuratDetails'])
+            ->name('jenis-surat.details');
         Route::get('terbit/{suratTerbit}/download', [SuratTerbitController::class, 'download'])->name('terbit.download');
         Route::get('terbit/{suratTerbit}/batalkan', [SuratTerbitController::class, 'batalkanForm'])->name('terbit.batalkan.form');
         Route::post('terbit/{suratTerbit}/batalkan', [SuratTerbitController::class, 'batalkan'])->name('terbit.batalkan');
+        Route::post('terbit/{suratTerbit}/regenerate-pdf', [SuratTerbitController::class, 'regeneratePdf'])->name('terbit.regenerate-pdf');
     });
 
     // Master Data (Super Admin only)

@@ -148,9 +148,9 @@ class SuratTerbitPolicyTest extends TestCase
         $this->assertFalse($this->aRt->can('create', SuratTerbit::class));
     }
 
-    public function test_admin_desa_dapat_mengubah_surat_dalam_desanya(): void
+    public function test_admin_desa_tidak_dapat_mengubah_surat_dalam_desanya(): void
     {
-        $this->assertTrue($this->aDesa->can('update', $this->surat));
+        $this->assertFalse($this->aDesa->can('update', $this->surat));
     }
 
     public function test_admin_desa_tidak_dapat_mengubah_surat_desa_lain(): void
@@ -204,10 +204,31 @@ class SuratTerbitPolicyTest extends TestCase
         $this->assertFalse($this->aRw->can('batalkan', $this->surat));
     }
 
-    // forceDelete — KRITIS: hanya admin_desa, super_admin DENY
-    public function test_admin_desa_dapat_hapus_permanen_surat(): void
+    // forceDelete — semua role DENY karena surat immutable
+    public function test_admin_desa_dapat_regenerate_pdf_surat_aktif_dalam_desanya(): void
     {
-        $this->assertTrue($this->aDesa->can('forceDelete', $this->surat));
+        $this->assertTrue($this->aDesa->can('regeneratePdf', $this->surat));
+    }
+
+    public function test_regenerate_pdf_ditolak_untuk_super_admin_rt_rw_viewer_dan_desa_lain(): void
+    {
+        $this->assertFalse($this->superAdmin->can('regeneratePdf', $this->surat));
+        $this->assertFalse($this->aRw->can('regeneratePdf', $this->surat));
+        $this->assertFalse($this->aRt->can('regeneratePdf', $this->surat));
+        $this->assertFalse($this->aViewer->can('regeneratePdf', $this->surat));
+        $this->assertFalse($this->aDesa->can('regeneratePdf', $this->suratOtherDesa));
+    }
+
+    public function test_regenerate_pdf_ditolak_untuk_surat_batal(): void
+    {
+        $this->surat->update(['status' => 'BATAL']);
+
+        $this->assertFalse($this->aDesa->can('regeneratePdf', $this->surat));
+    }
+
+    public function test_admin_desa_tidak_dapat_hapus_permanen_surat(): void
+    {
+        $this->assertFalse($this->aDesa->can('forceDelete', $this->surat));
     }
 
     public function test_super_admin_tidak_dapat_hapus_permanen_surat(): void

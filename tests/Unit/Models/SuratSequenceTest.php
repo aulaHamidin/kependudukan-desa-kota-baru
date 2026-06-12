@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Models;
 
 use App\Models\SuratSequence;
+use App\Services\SequenceGeneratorService;
 use Database\Seeders\JenisSuratSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,5 +78,33 @@ class SuratSequenceTest extends TestCase
 
         $this->assertCount(1, $results);
         $this->assertEquals('SKD', $results->first()->jenis_surat_kode);
+    }
+
+    public function test_format_nomor_surat_mengikuti_contoh_word_desa(): void
+    {
+        config(['app.desa.kode_surat' => '01.2009']);
+
+        $formatted = app(SequenceGeneratorService::class)
+            ->formatSuratNumber('SKD', '3201012001', 1, 2026, 6);
+
+        $this->assertSame('145 / 001 / 01.2009 / 2026', $formatted);
+    }
+
+    public function test_generate_nomor_surat_word_memakai_sequence_global_antar_jenis(): void
+    {
+        config(['app.desa.kode_surat' => '01.2009']);
+
+        $service = app(SequenceGeneratorService::class);
+
+        $first = $service->generateSuratNumber('SKD', '3201012001', 2026, 6);
+        $second = $service->generateSuratNumber('SKLHR', '3201012001', 2026, 6);
+
+        $this->assertSame('145 / 001 / 01.2009 / 2026', $first['formatted']);
+        $this->assertSame('145 / 002 / 01.2009 / 2026', $second['formatted']);
+        $this->assertDatabaseHas('surat_nomor_sequences', [
+            'kode_surat' => '01.2009',
+            'tahun' => 2026,
+            'sequence_number' => 2,
+        ]);
     }
 }

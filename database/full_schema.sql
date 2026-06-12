@@ -584,6 +584,21 @@ CREATE TABLE `status_kependudukan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+DROP TABLE IF EXISTS `surat_nomor_sequences`;
+CREATE TABLE `surat_nomor_sequences` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `kode_surat` varchar(30) NOT NULL,
+  `tahun` int(11) NOT NULL,
+  `sequence_number` int(11) NOT NULL DEFAULT 0,
+  `last_generated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_surat_nomor_sequences_unique` (`kode_surat`,`tahun`),
+  KEY `idx_surat_nomor_sequences_tahun` (`tahun`),
+  CONSTRAINT `chk_surat_nomor_sequences_tahun` CHECK (`tahun` between 2000 and 2100),
+  CONSTRAINT `chk_surat_nomor_sequences_number` CHECK (`sequence_number` >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 DROP TABLE IF EXISTS `surat_sequence`;
 CREATE TABLE `surat_sequence` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,

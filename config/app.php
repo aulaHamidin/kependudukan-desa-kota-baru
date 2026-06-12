@@ -83,7 +83,7 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'id'),
 
     /*
     |--------------------------------------------------------------------------
@@ -200,18 +200,22 @@ return [
         // Identitas Desa
         'nama'      => env('DESA_NAMA', 'DESA KOTA BARU'),
         'kode'      => env('DESA_KODE', '3201010001'),
+        'kode_surat' => env('DESA_KODE_SURAT', '01.2009'),
         'kecamatan' => env('DESA_KECAMATAN', 'MARTAPURA'),
-        'kabupaten' => env('DESA_KABUPATEN', 'OGAN KOMERINGH ULU TIMUR'),
+        'kabupaten' => env('DESA_KABUPATEN', 'OGAN KOMERING ULU TIMUR'),
         'provinsi'  => env('DESA_PROVINSI', 'SUMATERA SELATAN'),
-        'alamat'    => env('DESA_ALAMAT', 'Jl. Desa No. 1'),
-        'kode_pos'  => env('DESA_KODE_POS', '32181'),
+        'alamat'    => env('DESA_ALAMAT', 'Jalan Pertanian No.958 Desa Kota Baru Kecamatan Martapura Kabupaten OKU Timur'),
+        'kode_pos'  => env('DESA_KODE_POS', '32311'),
         'telepon'   => env('DESA_TELEPON', '(021) 123-4567'),
-        'email'     => env('DESA_EMAIL', 'desa@example.com'),
+        'email'     => env('DESA_EMAIL', 'kotabaru1608012009@gmail.com'),
 
         // Pejabat - Kepala Desa
         'kepala_desa' => [
             'nama' => env('DESA_KEPALA_NAMA', 'HENDRI SUSANTO'),
             'nip'  => env('DESA_KEPALA_NIP', null),
+            'nik'  => env('DESA_KEPALA_NIK', '1608011703770001'),
+            'jabatan' => env('DESA_KEPALA_JABATAN', 'Kepala Desa'),
+            'alamat' => env('DESA_KEPALA_ALAMAT', 'Jl Sinar Hijau RT. 001 Dusun 001 Desa Kotabaru Kec. Martapura Kab. OKU Timur Sumatera Selatan'),
         ],
 
         // Pejabat - Sekretaris Desa

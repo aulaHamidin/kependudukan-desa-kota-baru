@@ -108,6 +108,23 @@
                         @endif
                     @endif
                 @endcan
+                @can('regeneratePdf', $suratTerbit)
+                    @if ($isAktif)
+                        <form method="POST" action="{{ route('surat.terbit.regenerate-pdf', $suratTerbit) }}"
+                            x-data="swalConfirm(@js([
+                                'title' => 'Buat Ulang PDF?',
+                                'text' => 'File PDF akan dibuat ulang menggunakan template terbaru. Data surat tidak akan berubah.',
+                                'confirmText' => 'Ya, Buat Ulang',
+                                'cancelText' => 'Batal',
+                            ]))"
+                            @submit.prevent="submit($event)">
+                            @csrf
+                            <x-button type="submit" variant="secondary" icon="refresh">
+                                Buat Ulang PDF
+                            </x-button>
+                        </form>
+                    @endif
+                @endcan
                 @can('batalkan', $suratTerbit)
                     @if ($isAktif)
                         <x-button href="{{ route('surat.terbit.batalkan.form', $suratTerbit) }}" variant="danger"

@@ -14,67 +14,7 @@
 
     <x-alert />
 
-    <div x-data="{
-        selectedJenis: '{{ old('jenis_surat_kode') }}' || '',
-        details: null,
-        isLoading: false,
-        detailsUrl: '{{ url('api/jenis-surat') }}',
-        csrfToken: '{{ csrf_token() }}',
-    
-        init() {
-            if (this.selectedJenis) {
-                this.fetchDetails();
-            }
-        },
-    
-        async fetchDetails() {
-            if (!this.selectedJenis) {
-                this.details = null;
-                return;
-            }
-    
-            this.isLoading = true;
-            const url = `${this.detailsUrl}/${this.selectedJenis}`;
-            console.log('Fetching jenis surat details from:', url);
-    
-            try {
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': this.csrfToken
-                    },
-                    credentials: 'same-origin'
-                });
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers.get('content-type'));
-    
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Error response:', errorData);
-                    throw new Error(`Failed to fetch details: ${JSON.stringify(errorData)}`);
-                }
-    
-                this.details = await response.json();
-                console.log('Details loaded:', this.details);
-            } catch (error) {
-                console.error('Error fetching jenis surat details:', error);
-                this.details = null;
-            } finally {
-                this.isLoading = false;
-            }
-        },
-    
-        isInternal() {
-            return (this.details?.template_category || '').toLowerCase() === 'internal';
-        },
-    
-        isBalasan() {
-            return (this.details?.kode || '').toUpperCase() === 'SBALASAN';
-        }
-    }" x-init="init()">
+    <div x-data="suratCreateForm()" x-init="init()">
         <form method="POST" action="{{ route('surat.terbit.store') }}">
             @csrf
 
@@ -97,7 +37,7 @@
                         {{-- Jenis Surat Selection --}}
                         <div>
                             <x-form-select name="jenis_surat_kode" label="Jenis Surat" :options="$jenisOptions"
-                                :value="old('jenis_surat_kode')" x-model="selectedJenis" @change="fetchDetails" required
+                                :value="old('jenis_surat_kode')" x-model="selectedJenis" @change="fetchDetails()" required
                                 placeholder="Pilih jenis surat..." />
                         </div>
 
@@ -156,6 +96,31 @@
                 </div>
             </x-card>
 
+            {{-- Section 1A: Dynamic Template Fields --}}
+            <x-card class="mb-6" x-show="dynamicFields().length > 0" x-cloak>
+                <x-slot name="header">
+                    <h3 class="text-lg font-semibold text-gray-900">Data Tambahan Template</h3>
+                    <p class="text-sm text-gray-500">Isi field khusus agar detail surat ikut tersimpan dan tercetak di PDF.</p>
+                </x-slot>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <template x-for="field in dynamicFields()" :key="field.name">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <span x-text="field.label"></span>
+                                <span x-show="field.required" class="text-red-500">*</span>
+                            </label>
+                            <input type="text"
+                                class="form-input-custom w-full"
+                                :name="`data_surat[${field.name}]`"
+                                :required="field.required"
+                                :value="oldDataSurat[field.name] || ''"
+                                :placeholder="`Isi ${field.label}`" />
+                        </div>
+                    </template>
+                </div>
+            </x-card>
+
             {{-- Section 1B: Detail Surat Internal (SBALASAN, Undangan, dll) --}}
             <x-card class="mb-6" x-show="isInternal()" x-cloak>
                 <x-slot name="header">
@@ -166,19 +131,22 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <x-form-input name="kepada" label="Kepada Yth." :value="old('kepada')"
-                        placeholder="Nama/instansi penerima" />
+                        placeholder="Nama/instansi penerima" x-bind:required="isInternal()" />
 
                     <x-form-input name="alamat_tujuan" label="Alamat Tujuan" :value="old('alamat_tujuan')"
-                        placeholder="Alamat penerima" />
+                        placeholder="Alamat penerima" x-bind:required="isInternal()" />
 
                     <x-form-input name="perihal" label="Perihal / Subject" :value="old('perihal')"
-                        placeholder="Subjek surat (mis. Balasan undangan...)" />
+                        placeholder="Subjek surat (mis. Balasan undangan...)" x-bind:required="isInternal()" />
 
                     <x-form-input name="lampiran" label="Lampiran" :value="old('lampiran')" placeholder="Contoh: 1 berkas" />
 
                     <div x-show="isBalasan()" x-cloak class="md:col-span-2">
-                        <x-form-input name="nomor_rujukan" label="Menjawab Surat Nomor" :value="old('nomor_rujukan')"
-                            placeholder="Nomor surat yang dibalas" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <x-form-input name="nomor_surat_masuk" label="Nomor Surat Masuk" :value="old('nomor_surat_masuk')"
+                                placeholder="Nomor surat yang dibalas" />
+                            <x-form-date name="tanggal_surat_masuk" label="Tanggal Surat Masuk" :value="old('tanggal_surat_masuk')" />
+                        </div>
                     </div>
                 </div>
             </x-card>
@@ -197,7 +165,7 @@
                     </div>
                     <div class="flex-1">
                         <h4 class="text-sm font-bold text-amber-800">
-                            ?? Perhatian: Jangan Lupa Input Event Setelah Surat Diterbitkan
+                            Perhatian: Jangan Lupa Input Event Setelah Surat Diterbitkan
                         </h4>
                         <div x-show="selectedJenis && selectedJenis === 'SKMT'">
                             <p class="text-sm text-amber-700 mt-1">
@@ -211,7 +179,7 @@
                             </ul>
                             <a href="{{ route('events.kematian.create') }}"
                                 class="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">
-                                ? Buka Form Input Event Kematian
+                                Buka Form Input Event Kematian
                             </a>
                         </div>
                         <div x-show="selectedJenis && selectedJenis === 'SKPD'">
@@ -227,7 +195,7 @@
                             </ul>
                             <a href="{{ route('events.pindah.create') }}"
                                 class="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold text-amber-800 underline underline-offset-2 hover:text-amber-900">
-                                ? Buka Form Input Event Pindah
+                                Buka Form Input Event Pindah
                             </a>
                         </div>
                     </div>
@@ -244,8 +212,22 @@
                     <x-form-textarea name="keperluan" label="Keperluan Pembuatan Surat" rows="3" required
                         placeholder="Contoh: Persyaratan administrasi perbankan" :value="old('keperluan')" />
 
-                    <x-form-textarea name="keterangan_tambahan" label="Keterangan Tambahan (Opsional)" rows="2"
-                        placeholder="Catatan tambahan bila diperlukan..." :value="old('keterangan_tambahan')" />
+                    <div>
+                        <label for="keterangan_tambahan" class="form-label">
+                            <span x-text="isBalasan() ? 'Isi Balasan Surat' : 'Keterangan Tambahan (Opsional)'"></span>
+                            <span x-show="isBalasan()" class="text-rose-500">*</span>
+                        </label>
+                        <textarea name="keterangan_tambahan" id="keterangan_tambahan" rows="5"
+                            x-bind:required="isBalasan()"
+                            x-bind:placeholder="isBalasan() ? 'Tulis isi/jawaban utama yang akan dicetak di badan surat balasan.' : 'Catatan tambahan bila diperlukan...'"
+                            class="form-input-custom resize-none{{ $errors->has('keterangan_tambahan') ? ' border-rose-300 focus:border-rose-500 focus:ring-rose-500/20' : '' }}">{{ old('keterangan_tambahan') }}</textarea>
+                        <p class="form-hint" x-show="isBalasan()" x-cloak>
+                            Isi ini akan dicetak sebagai badan utama Surat Balasan Desa.
+                        </p>
+                        @error('keterangan_tambahan')
+                            <p class="form-error">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </x-card>
 
@@ -261,7 +243,7 @@
                     </div>
                     <div>
                         <x-form-input name="masa_berlaku_khusus" type="number" label="Masa Berlaku Khusus (Hari)"
-                            placeholder="Kosongkan jika mengikuti default Jenis Surat" min="1" max="365"
+                            placeholder="Kosongkan jika mengikuti default Jenis Surat" min="1" max="3650"
                             helper="Abaikan jika ingin menggunakan masa berlaku bawaan dari template."
                             :value="old('masa_berlaku_khusus')" />
                     </div>
@@ -284,4 +266,84 @@
             </x-card>
         </form>
     </div>
+
+    @push('scripts')
+        <script>
+            window.suratCreateFormDefaults = @js([
+                'selectedJenis' => old('jenis_surat_kode', ''),
+                'detailsUrl' => url('surat/jenis-surat'),
+                'csrfToken' => csrf_token(),
+                'oldDataSurat' => old('data_surat', []),
+            ]);
+
+            window.suratCreateForm = function () {
+                const defaults = window.suratCreateFormDefaults || {};
+
+                return {
+                    selectedJenis: defaults.selectedJenis || '',
+                    details: null,
+                    isLoading: false,
+                    detailsUrl: defaults.detailsUrl || '',
+                    csrfToken: defaults.csrfToken || '',
+                    oldDataSurat: defaults.oldDataSurat || {},
+
+                    init() {
+                        if (this.selectedJenis) {
+                            this.fetchDetails();
+                        }
+                    },
+
+                    async fetchDetails() {
+                        if (!this.selectedJenis) {
+                            this.details = null;
+                            return;
+                        }
+
+                        this.isLoading = true;
+                        const url = `${this.detailsUrl}/${this.selectedJenis}`;
+
+                        try {
+                            const response = await fetch(url, {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': this.csrfToken
+                                },
+                                credentials: 'same-origin'
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`Failed to fetch details: ${response.status}`);
+                            }
+
+                            this.details = await response.json();
+                        } catch (error) {
+                            this.details = null;
+                        } finally {
+                            this.isLoading = false;
+                        }
+                    },
+
+                    isInternal() {
+                        return (this.details?.template_category || '').toLowerCase() === 'internal';
+                    },
+
+                    isBalasan() {
+                        return (this.details?.kode || '').toUpperCase() === 'SBALASAN';
+                    },
+
+                    dynamicFields() {
+                        const internalFields = ['kepada', 'alamat_tujuan', 'perihal', 'lampiran', 'nomor_rujukan', 'nomor_surat_masuk', 'tanggal_surat_masuk', 'isi_balasan'];
+                        const fields = this.details?.dynamic_fields || [];
+
+                        return this.isInternal()
+                            ? fields.filter((field) => !internalFields.includes(field.name))
+                            : fields;
+                    }
+                };
+            };
+        </script>
+    @endpush
 </x-app-layout>

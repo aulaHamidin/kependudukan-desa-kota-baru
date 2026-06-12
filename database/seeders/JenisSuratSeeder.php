@@ -35,10 +35,13 @@ class JenisSuratSeeder extends Seeder
                 'deskripsi'         => 'Surat keterangan tempat tinggal untuk penduduk tetap maupun sementara',
                 'template_category' => 'keterangan',
                 'template_sections' => [
-                    'data_fields'   => ['nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'pekerjaan', 'alamat'],
+                    'data_fields'   => ['nama_lengkap', 'bin_binti', 'tempat_tanggal_lahir', 'nik', 'no_kk', 'pekerjaan', 'alamat', 'alamat_domisili'],
                     'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
-                    'body'          => 'Adalah benar warga Desa kami yang berdomisili di alamat tersebut di atas.',
-                    'show_purpose'  => true,
+                    'body'          => 'Nama tersebut adalah benar warga desa dan berdomisili di alamat tersebut.',
+                    'required_fields' => ['nama_lengkap', 'nik'],
+                    'show_purpose'  => false,
+                    'closing'       => 'Demikian Surat Keterangan Domisili ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.',
+                    'suppress_default_closing' => true,
                     'signature'     => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKD',
@@ -56,7 +59,8 @@ class JenisSuratSeeder extends Seeder
                     'additional_fields' => ['alamat_tujuan', 'alasan_pindah'],
                     'intro'            => 'Yang bertanda tangan di bawah ini, Kepala Desa, memberikan keterangan pindah kepada:',
                     'body'             => 'Bermaksud untuk pindah/datang ke alamat tujuan sebagaimana tersebut di atas.',
-                    'purpose_label'    => 'Surat ini ditujukan kepada Dinas Kependudukan dan Catatan Sipil untuk keperluan',
+                    'target_instansi'  => 'Dinas Kependudukan dan Pencatatan Sipil',
+                    'required_fields'  => ['nama_lengkap', 'nik', 'alamat_tujuan', 'alasan_pindah'],
                     'signature'        => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKPD',
@@ -70,11 +74,12 @@ class JenisSuratSeeder extends Seeder
                 'deskripsi'         => 'Surat pengantar desa untuk pengurusan akta kelahiran di Disdukcapil',
                 'template_category' => 'pengantar',
                 'template_sections' => [
-                    'data_fields'      => ['nama_bayi', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'anak_ke'],
+                    'data_fields'      => ['nama_bayi', 'jenis_kelamin_bayi', 'tempat_lahir_bayi', 'tanggal_lahir_bayi', 'anak_ke'],
                     'additional_fields' => ['nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah'],
                     'intro'            => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa telah lahir seorang anak:',
                     'body'             => 'Demikian surat keterangan kelahiran ini dibuat berdasarkan keterangan dari orang tua dan saksi-saksi.',
-                    'purpose_label'    => 'Surat ini digunakan untuk pengurusan akta kelahiran di',
+                    'target_instansi'  => 'Dinas Kependudukan dan Pencatatan Sipil',
+                    'required_fields'  => ['nama_bayi', 'jenis_kelamin_bayi', 'tempat_lahir_bayi', 'tanggal_lahir_bayi', 'nama_ibu', 'nik_ibu', 'nama_ayah', 'nik_ayah'],
                     'signature'        => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKLHR',
@@ -92,7 +97,8 @@ class JenisSuratSeeder extends Seeder
                     'additional_fields' => ['tanggal_meninggal', 'tempat_meninggal', 'sebab_kematian'],
                     'intro'            => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
                     'body'             => 'Telah meninggal dunia sebagaimana keterangan di atas.',
-                    'purpose_label'    => 'Surat ini digunakan untuk pengurusan akta kematian di',
+                    'target_instansi'  => 'Dinas Kependudukan dan Pencatatan Sipil',
+                    'required_fields'  => ['nama_lengkap', 'nik', 'tanggal_meninggal', 'tempat_meninggal', 'sebab_kematian'],
                     'signature'        => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKMT',
@@ -109,6 +115,7 @@ class JenisSuratSeeder extends Seeder
                     'data_fields'   => ['nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'pekerjaan', 'alamat', 'status_kawin'],
                     'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
                     'body'          => 'Berdasarkan data kependudukan dan pengakuan yang bersangkutan, hingga surat ini dibuat yang bersangkutan belum pernah melangsungkan pernikahan.',
+                    'required_fields' => ['nama_lengkap', 'nik'],
                     'show_purpose'  => true,
                     'signature'     => 'kepala_desa',
                 ],
@@ -125,9 +132,11 @@ class JenisSuratSeeder extends Seeder
                 'template_sections' => [
                     'data_fields'      => ['nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'pekerjaan', 'alamat', 'status_kawin'],
                     'additional_fields' => ['nama_calon_pasangan', 'nik_calon_pasangan', 'alamat_calon_pasangan'],
-                    'intro'            => 'Yang bertanda tangan di bawah ini, Kepala Desa, memberikan pengantar nikah kepada:',
-                    'body'             => 'Bermaksud untuk melangsungkan pernikahan dengan calon pasangan sebagaimana tersebut di atas.',
-                    'purpose_label'    => 'Surat ini ditujukan kepada Kantor Urusan Agama (KUA) untuk keperluan',
+                    'intro'            => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
+                    'body'             => 'Berdasarkan data kependudukan dan keterangan yang bersangkutan, pemohon tersebut bermaksud melangsungkan pernikahan dengan calon pasangan sebagaimana keterangan di bawah ini.',
+                    'target_instansi'  => 'Kantor Urusan Agama (KUA)',
+                    'required_fields'  => ['nama_lengkap', 'nik', 'nama_calon_pasangan', 'nik_calon_pasangan', 'alamat_calon_pasangan'],
+                    'closing'          => 'Demikian surat keterangan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.',
                     'signature'        => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKN',
@@ -204,10 +213,14 @@ class JenisSuratSeeder extends Seeder
                 'deskripsi'         => 'Surat keterangan kondisi ekonomi untuk pengurusan KIS, KIP, atau bantuan sosial',
                 'template_category' => 'keterangan',
                 'template_sections' => [
-                    'data_fields'   => ['nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'pekerjaan', 'alamat'],
-                    'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
-                    'body'          => 'Adalah benar warga Desa kami yang tergolong keluarga tidak mampu/kurang mampu berdasarkan data dan pengamatan di lapangan.',
-                    'show_purpose'  => true,
+                    'data_fields'   => ['nama_lengkap', 'bin_binti', 'tempat_tanggal_lahir', 'nik', 'no_kk', 'kewarganegaraan', 'agama', 'jenis_kelamin', 'pekerjaan', 'alamat', 'alamat_domisili'],
+                    'additional_fields' => ['nama_anak', 'bin_binti_anak', 'tempat_lahir_anak', 'tanggal_lahir_anak', 'nik_anak', 'no_kk_anak', 'kewarganegaraan_anak', 'agama_anak', 'jenis_kelamin_anak', 'pekerjaan_anak', 'alamat_anak', 'alamat_domisili_anak', 'keperluan_program'],
+                    'intro'         => 'Kepala Desa menerangkan bahwa:',
+                    'body'          => 'Keluarga tersebut tergolong keluarga tidak mampu/kurang mampu berdasarkan data dan keadaan yang sebenarnya.',
+                    'required_fields' => ['nama_lengkap', 'nik', 'nama_anak', 'bin_binti_anak', 'tempat_lahir_anak', 'tanggal_lahir_anak', 'nik_anak', 'no_kk_anak', 'kewarganegaraan_anak', 'agama_anak', 'jenis_kelamin_anak', 'pekerjaan_anak', 'alamat_anak', 'alamat_domisili_anak'],
+                    'show_purpose'  => false,
+                    'closing'       => 'Demikian Surat Keterangan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.',
+                    'suppress_default_closing' => true,
                     'signature'     => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKTM',
@@ -221,10 +234,13 @@ class JenisSuratSeeder extends Seeder
                 'deskripsi'         => 'Surat keterangan kepemilikan usaha untuk pengajuan pinjaman atau izin',
                 'template_category' => 'keterangan',
                 'template_sections' => [
-                    'data_fields'   => ['nama_lengkap', 'nik', 'alamat', 'nama_usaha', 'jenis_usaha', 'alamat_usaha', 'tahun_berdiri'],
+                    'data_fields'   => ['nama_lengkap', 'tempat_tanggal_lahir', 'nik', 'no_kk', 'kewarganegaraan', 'agama', 'status_perkawinan', 'pekerjaan', 'alamat', 'alamat_domisili', 'nama_usaha', 'jenis_usaha', 'alamat_usaha', 'ukuran_tempat_usaha', 'jumlah_tenaga_pembantu', 'catatan_usaha'],
                     'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
                     'body'          => 'Adalah benar memiliki dan menjalankan usaha sebagaimana tersebut di atas di wilayah Desa kami.',
-                    'show_purpose'  => true,
+                    'required_fields' => ['nama_lengkap', 'nik', 'nama_usaha', 'alamat_usaha', 'ukuran_tempat_usaha', 'jumlah_tenaga_pembantu'],
+                    'show_purpose'  => false,
+                    'closing'       => 'Demikian Surat Keterangan ini dibuat dengan sebenarnya dan diberikan kepada yang bersangkutan sebagai pegangan dan untuk dipergunakan sebagaimana mestinya.',
+                    'suppress_default_closing' => true,
                     'signature'     => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'SKU',
@@ -323,6 +339,7 @@ class JenisSuratSeeder extends Seeder
                     'data_fields'   => ['nama_lengkap', 'nik', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'pekerjaan', 'alamat'],
                     'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:',
                     'body'          => 'Sepanjang pengetahuan kami, yang bersangkutan berkelakuan baik dan tidak pernah terlibat dalam tindak kejahatan atau pelanggaran hukum.',
+                    'required_fields' => ['nama_lengkap', 'nik'],
                     'show_purpose'  => true,
                     'signature'     => 'kepala_desa',
                 ],
@@ -401,6 +418,7 @@ class JenisSuratSeeder extends Seeder
                     'detail_fields' => ['jenis_kegiatan', 'tanggal_mulai', 'tanggal_selesai', 'waktu', 'tempat', 'jumlah_undangan'],
                     'intro'         => 'Yang bertanda tangan di bawah ini, Kepala Desa, memberikan izin keramaian kepada:',
                     'body'          => 'Untuk mengadakan kegiatan sebagaimana tersebut di bawah ini:',
+                    'required_fields' => ['nama_lengkap', 'nik', 'jenis_kegiatan', 'tanggal_mulai', 'tanggal_selesai', 'waktu', 'tempat'],
                     'terms'         => [
                         'Wajib menjaga ketertiban dan keamanan selama kegiatan berlangsung.',
                         'Tidak mengganggu ketertiban umum dan masyarakat sekitar.',
@@ -682,8 +700,10 @@ class JenisSuratSeeder extends Seeder
                 'template_category' => 'internal',
                 'template_sections' => [
                     'salam_pembuka' => 'Dengan hormat,',
+                    'detail_fields'  => ['nomor_surat_masuk', 'tanggal_surat_masuk', 'isi_balasan'],
                     'body'          => 'Menindaklanjuti surat yang kami terima, dengan ini kami sampaikan hal-hal sebagai berikut.',
                     'salam_penutup' => 'Demikian surat balasan ini kami sampaikan, atas perhatiannya kami ucapkan terima kasih.',
+                    'required_fields' => ['kepada', 'alamat_tujuan', 'perihal', 'keterangan_tambahan'],
                     'signature'     => 'kepala_desa',
                 ],
                 'prefix_nomor'      => 'BALASAN',
@@ -694,10 +714,7 @@ class JenisSuratSeeder extends Seeder
         ];
 
         foreach ($jenisSurat as $data) {
-            // Convert template_sections to JSON
-            if (isset($data['template_sections']) && is_array($data['template_sections'])) {
-                $data['template_sections'] = json_encode($data['template_sections']);
-            }
+            $data['format_nomor'] ??= '145 / {sequence3} / {kode_surat} / {year}';
 
             JenisSurat::updateOrCreate(
                 ['kode' => $data['kode']],

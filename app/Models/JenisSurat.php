@@ -77,10 +77,14 @@ class JenisSurat extends Model
         'nik'             => 'NIK',
         'tempat_lahir'    => 'Tempat Lahir',
         'tanggal_lahir'   => 'Tanggal Lahir',
+        'tempat_tanggal_lahir' => 'Tempat, Tanggal Lahir',
         'jenis_kelamin'   => 'Jenis Kelamin',
         'agama'           => 'Agama',
         'pekerjaan'       => 'Pekerjaan',
         'alamat'          => 'Alamat',
+        'alamat_kk'       => 'Alamat Sesuai KK',
+        'alamat_domisili' => 'Alamat Domisili',
+        'bin_binti'       => 'Bin/Binti',
         'rt'              => 'RT',
         'rw'              => 'RW',
         'desa'            => 'Desa/Kelurahan',
@@ -88,10 +92,63 @@ class JenisSurat extends Model
         'kabupaten'       => 'Kabupaten/Kota',
         'provinsi'        => 'Provinsi',
         'status_kawin'    => 'Status Perkawinan',
+        'status_perkawinan' => 'Status Perkawinan',
         'pendidikan'      => 'Pendidikan Terakhir',
         'kewarganegaraan' => 'Kewarganegaraan',
         'no_kk'           => 'Nomor Kartu Keluarga',
         'tujuan'          => 'Keperluan/Tujuan',
+        'instansi_tujuan' => 'Instansi Tujuan',
+        'alamat_tujuan'   => 'Alamat Tujuan',
+        'alasan_pindah'   => 'Alasan Pindah',
+        'nama_bayi'       => 'Nama Bayi',
+        'jenis_kelamin_bayi' => 'Jenis Kelamin Bayi',
+        'tempat_lahir_bayi' => 'Tempat Lahir Bayi',
+        'tanggal_lahir_bayi' => 'Tanggal Lahir Bayi',
+        'anak_ke'         => 'Anak Ke',
+        'nama_ibu'        => 'Nama Ibu',
+        'nik_ibu'         => 'NIK Ibu',
+        'nama_ayah'       => 'Nama Ayah',
+        'nik_ayah'        => 'NIK Ayah',
+        'tanggal_meninggal' => 'Tanggal Meninggal',
+        'tempat_meninggal' => 'Tempat Meninggal',
+        'sebab_kematian'  => 'Sebab Kematian',
+        'nama_calon_pasangan' => 'Nama Calon Pasangan',
+        'nik_calon_pasangan' => 'NIK Calon Pasangan',
+        'alamat_calon_pasangan' => 'Alamat Calon Pasangan',
+        'nama_anak'       => 'Nama Anak',
+        'bin_binti_anak'  => 'Bin/Binti Anak',
+        'tempat_lahir_anak' => 'Tempat Lahir Anak',
+        'tanggal_lahir_anak' => 'Tanggal Lahir Anak',
+        'tempat_tanggal_lahir_anak' => 'Tempat, Tanggal Lahir Anak',
+        'nik_anak'        => 'NIK Anak',
+        'no_kk_anak'      => 'Nomor KK Anak',
+        'kewarganegaraan_anak' => 'Kewarganegaraan Anak',
+        'agama_anak'      => 'Agama Anak',
+        'jenis_kelamin_anak' => 'Jenis Kelamin Anak',
+        'pekerjaan_anak'  => 'Pekerjaan Anak',
+        'alamat_anak'     => 'Alamat Anak',
+        'alamat_domisili_anak' => 'Alamat Domisili Anak',
+        'keperluan_program' => 'Keperluan Program',
+        'nama_usaha'      => 'Nama Usaha',
+        'jenis_usaha'     => 'Jenis Usaha',
+        'alamat_usaha'    => 'Alamat Usaha',
+        'tahun_berdiri'   => 'Tahun Berdiri',
+        'ukuran_tempat_usaha' => 'Ukuran Tempat Usaha',
+        'jumlah_tenaga_pembantu' => 'Jumlah Tenaga Pembantu',
+        'catatan_usaha'   => 'Catatan Usaha',
+        'jenis_kegiatan'  => 'Jenis Kegiatan',
+        'tanggal_mulai'   => 'Tanggal Mulai',
+        'tanggal_selesai' => 'Tanggal Selesai',
+        'waktu'           => 'Waktu',
+        'tempat'          => 'Tempat',
+        'jumlah_undangan' => 'Perkiraan Jumlah Undangan',
+        'kepada'          => 'Kepada Yth.',
+        'perihal'         => 'Perihal',
+        'lampiran'        => 'Lampiran',
+        'nomor_rujukan'   => 'Nomor Surat Rujukan',
+        'nomor_surat_masuk' => 'Nomor Surat Masuk',
+        'tanggal_surat_masuk' => 'Tanggal Surat Masuk',
+        'isi_balasan'     => 'Isi Balasan',
     ];
 
     protected $fillable = [
@@ -209,14 +266,31 @@ class JenisSurat extends Model
      */
     public function getSections(): array
     {
-        $templateSections = $this->template_sections;
-        
-        // Ensure template_sections is an array
-        if (!is_array($templateSections)) {
-            $templateSections = [];
-        }
+        $templateSections = $this->normalizeTemplateSections($this->template_sections);
         
         return array_merge($this->getDefaultSections(), $templateSections);
+    }
+
+    /**
+     * Normalize template_sections from current array cast or legacy double-encoded JSON.
+     */
+    private function normalizeTemplateSections(mixed $templateSections): array
+    {
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            if (!is_string($templateSections)) {
+                break;
+            }
+
+            $decoded = json_decode($templateSections, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return [];
+            }
+
+            $templateSections = $decoded;
+        }
+
+        return is_array($templateSections) ? $templateSections : [];
     }
 
     /**
@@ -290,6 +364,8 @@ class JenisSurat extends Model
      */
     public function renderTemplate(array $data, bool $skipValidation = false): \Illuminate\Contracts\View\View
     {
+        \Carbon\Carbon::setLocale(config('app.locale', 'id'));
+
         // Security: Validate category whitelist
         $this->validateTemplateCategory();
 

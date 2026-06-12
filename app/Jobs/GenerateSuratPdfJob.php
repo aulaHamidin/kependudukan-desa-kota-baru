@@ -82,8 +82,13 @@ class GenerateSuratPdfJob implements ShouldQueue
                 'desa'
             ])->findOrFail($this->suratId);
 
-            // Check if PDF already exists and regeneration not forced
-            if (!$this->regenerate && $surat->pdf_status === 'READY' && $surat->file_path) {
+            // Check if PDF already exists physically and regeneration not forced
+            if (
+                !$this->regenerate
+                && $surat->pdf_status === 'READY'
+                && $surat->file_path
+                && $pdfService->pdfExists($surat->file_path)
+            ) {
                 Log::info("PDF already exists, skipping generation", [
                     'surat_id' => $this->suratId,
                     'file_path' => $surat->file_path

@@ -209,7 +209,7 @@ class PdfGeneratorService
             'penduduk.pendidikan',
             'penduduk.pekerjaan',
             'penduduk.rt.rw.desa',
-            'kartuKeluarga',
+            'kartuKeluarga.rt.rw.desa',
             'desa'
         ]);
 
@@ -238,6 +238,8 @@ class PdfGeneratorService
      */
     private function prepareTemplateData(SuratTerbit $surat): array
     {
+        Carbon::setLocale('id');
+
         $penduduk = $surat->penduduk;
         /** @var \App\Models\Desa|null $desa */
         $desa = $surat->desa;
@@ -245,14 +247,34 @@ class PdfGeneratorService
             $desa = $penduduk->rt->rw->desa;
         }
 
-        // Build alamat from relationships
         $rtNum = $penduduk->rt?->nomor_rt ?? '-';
         $rwNum = $penduduk->rt?->rw?->nomor_rw ?? '-';
-        $alamat = $penduduk->rt
-            ? "RT {$rtNum}/RW {$rwNum}"
-            : '-';
+        $dataSurat = is_array($surat->data_surat) ? $surat->data_surat : [];
+        $kk = $surat->kartuKeluarga;
+        $alamatWilayah = $this->buildAlamatWilayah(
+            $kk?->alamat,
+            $rtNum,
+            $rwNum,
+            $desa?->nama,
+            $desa?->kecamatan,
+            $desa?->kabupaten,
+            $desa?->provinsi
+        );
+        $alamatRtRw = $penduduk->rt ? "RT {$rtNum}/RW {$rwNum}" : '-';
+        $tanggalLahirText = $this->formatDateIndonesian($penduduk->tgl_lahir);
+        $tempatTanggalLahir = trim(($penduduk->tempat_lahir ?: '-') . ', ' . $tanggalLahirText);
+        $binBinti = $dataSurat['bin_binti']
+            ?? $penduduk->nama_ayah
+            ?? $penduduk->nama_ibu
+            ?? '-';
+        $kepalaDesa = $this->resolveKepalaDesaData();
+        $desaBersih = $this->cleanTerritoryName($desa?->nama ?: config('app.desa.nama'), ['desa', 'kelurahan']);
+        $kecamatanBersih = $this->cleanTerritoryName($desa?->kecamatan ?: config('app.desa.kecamatan'), ['kecamatan']);
+        $kabupatenBersih = $this->cleanTerritoryName($desa?->kabupaten ?: config('app.desa.kabupaten'), ['kabupaten', 'kota']);
+        $provinsiBersih = $this->cleanTerritoryName($desa?->provinsi ?: config('app.desa.provinsi'), ['provinsi']);
+        $wilayahDesaText = $this->buildWilayahDesaText($desaBersih, $kecamatanBersih, $kabupatenBersih);
 
-        return [
+        $baseData = [
             // Surat info
             'suratTerbit'    => $surat,
             'nomor_surat'    => $surat->nomor_surat,
@@ -265,40 +287,160 @@ class PdfGeneratorService
             'nik'             => $penduduk->nik,
             'tempat_lahir'    => $penduduk->tempat_lahir,
             'tanggal_lahir'   => $penduduk->tgl_lahir,
+            'tanggal_lahir_text' => $tanggalLahirText,
+            'tempat_tanggal_lahir' => $tempatTanggalLahir,
+            'bin_binti'       => $binBinti,
             'jenis_kelamin'   => $penduduk->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
             'agama'           => $penduduk->agama?->nama ?? '-',
             'pekerjaan'       => $penduduk->pekerjaan?->nama ?? '-',
             'pendidikan'      => $penduduk->pendidikan?->nama ?? '-',
             'status_kawin'    => $penduduk->status_perkawinan ?? '-',
+            'status_perkawinan' => $penduduk->status_perkawinan ?? '-',
             'kewarganegaraan' => $penduduk->kewarganegaraan ?? 'WNI',
-            'no_kk'           => $surat->kartuKeluarga?->no_kk ?? '-',
+            'no_kk'           => $kk?->no_kk ?? '-',
 
             // Alamat (flat)
-            'alamat'    => $alamat,
+            'alamat'    => $alamatWilayah,
+            'alamat_kk' => $alamatWilayah,
+            'alamat_rt_rw' => $alamatRtRw,
+            'alamat_domisili' => $dataSurat['alamat_domisili'] ?? $alamatWilayah,
             'rt'        => $penduduk->rt?->nomor_rt ?? '-',
             'rw'        => $penduduk->rt?->rw?->nomor_rw ?? '-',
             'desa'      => $desa?->nama ?? '-',
             'kecamatan' => $desa?->kecamatan ?? '-',
             'kabupaten' => $desa?->kabupaten ?? '-',
             'provinsi'  => $desa?->provinsi ?? '-',
+            'desa_bersih' => $desaBersih,
+            'kecamatan_bersih' => $kecamatanBersih,
+            'kabupaten_bersih' => $kabupatenBersih,
+            'provinsi_bersih' => $provinsiBersih,
+            'wilayah_desa_text' => $wilayahDesaText,
 
             // Desa info (for signatures/kop)
             'desa_info' => [
-                'nama'      => $desa?->nama ?? config('app.desa.nama'),
-                'kecamatan' => $desa?->kecamatan ?? config('app.desa.kecamatan'),
-                'kabupaten' => $desa?->kabupaten ?? config('app.desa.kabupaten'),
-                'provinsi'  => $desa?->provinsi ?? config('app.desa.provinsi'),
+                'nama'      => config('app.desa.nama') ?: $desa?->nama,
+                'kecamatan' => config('app.desa.kecamatan') ?: $desa?->kecamatan,
+                'kabupaten' => config('app.desa.kabupaten') ?: $desa?->kabupaten,
+                'provinsi'  => config('app.desa.provinsi') ?: $desa?->provinsi,
+                'alamat'    => config('app.desa.alamat'),
+                'kode_pos'  => config('app.desa.kode_pos') ?: $desa?->kode_pos,
+                'telepon'   => config('app.desa.telepon'),
+                'email'     => config('app.desa.email'),
+                'nama_bersih' => $desaBersih,
+                'kecamatan_bersih' => $kecamatanBersih,
+                'kabupaten_bersih' => $kabupatenBersih,
+                'provinsi_bersih' => $provinsiBersih,
+                'wilayah_desa_text' => $wilayahDesaText,
             ],
 
             // Additional data from surat
             'keterangan_tambahan' => $surat->keterangan_tambahan,
-            'data_surat'          => $surat->data_surat ?? [],
+            'data_surat'          => $dataSurat,
 
             // Pejabat (from config or override)
-            'kepala_desa' => config('app.desa.kepala_desa'),
+            'kepala_desa' => $kepalaDesa,
             'sekdes'      => config('app.desa.sekdes'),
             'kasi'        => config('app.desa.kasi'),
         ];
+
+        return array_merge($dataSurat, $baseData);
+    }
+
+    private function buildAlamatWilayah(
+        ?string $alamat,
+        string $rt,
+        string $rw,
+        ?string $desa,
+        ?string $kecamatan,
+        ?string $kabupaten,
+        ?string $provinsi
+    ): string {
+        $parts = [];
+
+        if ($alamat) {
+            $parts[] = trim($alamat);
+        }
+
+        if ($rt !== '-' || $rw !== '-') {
+            $parts[] = sprintf('RT %s/RW %s', $rt, $rw);
+        }
+
+        foreach ([
+            $desa ? 'Desa ' . $this->stripTerritoryPrefix($desa, ['desa', 'kelurahan']) : null,
+            $kecamatan ? 'Kecamatan ' . $this->stripTerritoryPrefix($kecamatan, ['kecamatan']) : null,
+            $kabupaten ? 'Kabupaten ' . $this->stripTerritoryPrefix($kabupaten, ['kabupaten', 'kota']) : null,
+            $provinsi ? 'Provinsi ' . $this->stripTerritoryPrefix($provinsi, ['provinsi']) : null,
+        ] as $part) {
+            if ($part) {
+                $parts[] = $part;
+            }
+        }
+
+        return $parts !== [] ? implode(', ', $parts) : '-';
+    }
+
+    private function stripTerritoryPrefix(string $value, array $prefixes): string
+    {
+        return trim(preg_replace('/^(' . implode('|', $prefixes) . ')\s+/i', '', $value));
+    }
+
+    private function cleanTerritoryName(?string $value, array $prefixes): string
+    {
+        $cleaned = trim((string) $value);
+
+        if ($cleaned === '') {
+            return '-';
+        }
+
+        return $this->stripTerritoryPrefix($cleaned, $prefixes) ?: '-';
+    }
+
+    private function buildWilayahDesaText(string $desa, string $kecamatan, string $kabupaten): string
+    {
+        $parts = [];
+
+        if ($desa !== '-') {
+            $parts[] = 'Desa ' . $desa;
+        }
+
+        if ($kecamatan !== '-') {
+            $parts[] = 'Kecamatan ' . $kecamatan;
+        }
+
+        if ($kabupaten !== '-') {
+            $parts[] = 'Kabupaten ' . $kabupaten;
+        }
+
+        return $parts !== [] ? implode(', ', $parts) : '-';
+    }
+
+    private function formatDateIndonesian(mixed $date): string
+    {
+        if (!$date) {
+            return '-';
+        }
+
+        return Carbon::parse($date)->locale('id')->translatedFormat('d F Y');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolveKepalaDesaData(): array
+    {
+        $kepalaDesa = array_merge([
+            'nama' => 'HENDRI SUSANTO',
+            'nip' => null,
+            'nik' => null,
+            'jabatan' => 'Kepala Desa',
+            'alamat' => config('app.desa.alamat'),
+        ], config('app.desa.kepala_desa', []));
+
+        if (empty($kepalaDesa['alamat'])) {
+            $kepalaDesa['alamat'] = config('app.desa.alamat');
+        }
+
+        return $kepalaDesa;
     }
 
     /**

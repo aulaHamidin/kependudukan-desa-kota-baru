@@ -10,7 +10,9 @@ use App\Models\Penduduk;
 use App\Models\User;
 use App\DTOs\SuratTerbitDTO;
 use App\Traits\ValidatesTerritory;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -45,6 +47,21 @@ class SuratTerbitService
      */
     public function createSurat(array $data): SuratTerbit
     {
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                return $this->createSuratWithinTransaction($data);
+            } catch (QueryException $e) {
+                if (!$this->isDuplicateNomorSurat($e) || $attempt === 3) {
+                    throw $e;
+                }
+            }
+        }
+
+        throw new Exception('Surat gagal diterbitkan setelah mencoba membuat nomor surat unik.');
+    }
+
+    private function createSuratWithinTransaction(array $data): SuratTerbit
+    {
         return DB::transaction(function () use ($data) {
             // Validate required fields
             $this->validateSuratData($data);
@@ -52,7 +69,7 @@ class SuratTerbitService
             // Get jenis surat for business rules
             $jenisSurat = JenisSurat::findOrFail($data['jenis_surat_kode']);
 
-            // Extract data_surat payload (e.g., internal: kepada, alamat_tujuan, perihal, lampiran, nomor_rujukan)
+            // Extract data_surat payload (template dynamic fields + internal fields)
             $dataSuratPayload = $this->extractDataSuratPayload($data, $jenisSurat);
 
             // Validate penduduk exists and is in same territory
@@ -87,16 +104,18 @@ class SuratTerbitService
                 $data['bulan'] ?? null
             );
 
-            // Calculate expiry date if jenis surat has expiry period
-            $tanggalExpiry = null;
-            if ($jenisSurat->masa_berlaku_hari > 0) {
-                $tanggalTerbit = Carbon::parse($data['tanggal_terbit'] ?? now());
-                $tanggalExpiry = $tanggalTerbit->addDays($jenisSurat->masa_berlaku_hari);
-            }
+            $masaBerlakuHari = $this->resolveMasaBerlakuHari($data, $jenisSurat);
+            $tanggalTerbit = Carbon::parse($data['tanggal_terbit'] ?? now());
+            $tanggalExpiry = $masaBerlakuHari !== null && $masaBerlakuHari > 0
+                ? $tanggalTerbit->copy()->addDays($masaBerlakuHari)
+                : null;
+
+            unset($data['masa_berlaku_khusus']);
 
             // Create surat with generated data
             $suratData = array_merge($data, [
                 'nomor_surat' => $sequenceData['formatted'],
+                'masa_berlaku_hari' => $masaBerlakuHari,
                 'tanggal_kadaluarsa' => $tanggalExpiry,
                 'status' => 'AKTIF',
                 'pdf_status' => 'PROCESSING',
@@ -117,6 +136,18 @@ class SuratTerbitService
         });
     }
 
+    private function isDuplicateNomorSurat(QueryException $e): bool
+    {
+        $message = $e->getMessage();
+        $isIntegrityError = (string) $e->getCode() === '23000'
+            || in_array($e->errorInfo[1] ?? null, [1062, 19, 2067], true);
+
+        return $isIntegrityError
+            && (str_contains($message, 'surat_terbit_nomor_surat_unique')
+            || str_contains($message, 'Duplicate entry')
+            || str_contains($message, 'nomor_surat'));
+    }
+
     /**
      * Update existing surat
      * 
@@ -127,6 +158,10 @@ class SuratTerbitService
      */
     public function updateSurat(int $id, array $data): SuratTerbit
     {
+        throw new AuthorizationException(
+            'Surat yang sudah diterbitkan tidak dapat diubah. Batalkan surat lalu terbitkan ulang.'
+        );
+
         return DB::transaction(function () use ($id, $data) {
             $surat = SuratTerbit::findOrFail($id);
 
@@ -285,15 +320,21 @@ class SuratTerbitService
      */
     public function getSuratExpiringSoon(int $daysThreshold = 30, int $limit = 10): Collection
     {
+        $user = Auth::user();
         $thresholdDate = Carbon::now()->addDays($daysThreshold);
 
-        return SuratTerbit::with(['jenisSurat', 'penduduk'])
+        $query = SuratTerbit::with(['jenisSurat', 'penduduk'])
             ->whereNotNull('tanggal_kadaluarsa')
-            ->where('tanggal_kadaluarsa', '<=', $thresholdDate)
+            ->whereBetween('tanggal_kadaluarsa', [today(), $thresholdDate])
             ->where('status', 'AKTIF')
             ->orderBy('tanggal_kadaluarsa', 'asc')
-            ->limit($limit)
-            ->get();
+            ->limit($limit);
+
+        if ($user !== null) {
+            $query->forTerritory($user);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -304,6 +345,10 @@ class SuratTerbitService
      */
     public function softDeleteSurat(int $id): bool
     {
+        throw new AuthorizationException(
+            'Surat yang sudah diterbitkan tidak dapat dihapus. Gunakan pembatalan untuk audit.'
+        );
+
         return DB::transaction(function () use ($id) {
             $surat = SuratTerbit::findOrFail($id);
 
@@ -441,8 +486,19 @@ class SuratTerbitService
         return false;
     }
 
+    private function resolveMasaBerlakuHari(array $data, JenisSurat $jenisSurat): ?int
+    {
+        if (array_key_exists('masa_berlaku_khusus', $data) && $data['masa_berlaku_khusus'] !== null && $data['masa_berlaku_khusus'] !== '') {
+            return (int) $data['masa_berlaku_khusus'];
+        }
+
+        return $jenisSurat->masa_berlaku_hari !== null
+            ? (int) $jenisSurat->masa_berlaku_hari
+            : null;
+    }
+
     /**
-     * Extract additional payload for data_surat (e.g., internal surat fields)
+     * Extract additional payload for data_surat.
      *
      * @param array $data Request data (will not be mutated)
      * @param JenisSurat $jenisSurat Jenis surat for template category
@@ -459,26 +515,61 @@ class SuratTerbitService
             unset($data['data_surat']);
         }
 
-        $templateCategory = strtolower($jenisSurat->template_category ?? '');
+        foreach ($this->resolveDynamicFieldNames($jenisSurat) as $field) {
+            if (array_key_exists($field, $data)) {
+                $payload[$field] = $data[$field];
+                unset($data[$field]);
+            }
+        }
 
-        if ($templateCategory === 'internal') {
-            $internalFields = [
+        $payload = array_filter(
+            $payload,
+            fn($value) => !($value === null || $value === '')
+        );
+
+        return $payload !== [] ? $payload : null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function resolveDynamicFieldNames(JenisSurat $jenisSurat): array
+    {
+        $sections = $jenisSurat->getSections();
+        $sectionKeys = [
+            'data_fields',
+            'additional_fields',
+            'detail_fields',
+            'activity_fields',
+            'related_fields',
+        ];
+
+        $fields = [];
+        foreach ($sectionKeys as $sectionKey) {
+            $sectionFields = $sections[$sectionKey] ?? [];
+            if (is_array($sectionFields)) {
+                $fields = array_merge($fields, $sectionFields);
+            }
+        }
+
+        if (strtolower($jenisSurat->template_category ?? '') === 'internal') {
+            $fields = array_merge($fields, [
                 'kepada',
                 'alamat_tujuan',
                 'perihal',
                 'lampiran',
                 'nomor_rujukan',
-            ];
-
-            foreach ($internalFields as $field) {
-                if (array_key_exists($field, $data)) {
-                    $payload[$field] = $data[$field];
-                    unset($data[$field]);
-                }
-            }
+                'nomor_surat_masuk',
+                'tanggal_surat_masuk',
+                'isi_balasan',
+            ]);
         }
 
-        return !empty($payload) ? $payload : null;
+        return collect($fields)
+            ->filter(fn($field) => is_string($field) && $field !== '')
+            ->unique()
+            ->values()
+            ->all();
     }
 
     /**

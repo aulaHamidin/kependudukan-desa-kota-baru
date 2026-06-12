@@ -8,6 +8,18 @@
 @extends('surat.templates._layout')
 
 @section('content')
+    @php
+        $nomorSuratMasuk = $data['nomor_surat_masuk'] ?? $data['nomor_rujukan'] ?? null;
+        $tanggalSuratMasuk = $data['tanggal_surat_masuk'] ?? null;
+        $tanggalSuratMasukText = $tanggalSuratMasuk
+            ? \Carbon\Carbon::parse($tanggalSuratMasuk)->locale('id')->translatedFormat('d F Y')
+            : null;
+        $isiSurat = trim((string) ($data['isi_balasan'] ?? $data['keterangan_tambahan'] ?? ''));
+        $isiParagraf = $isiSurat !== ''
+            ? preg_split('/\R+/', $isiSurat, -1, PREG_SPLIT_NO_EMPTY)
+            : [];
+    @endphp
+
     {{-- PERIHAL & LAMPIRAN (untuk surat resmi) --}}
     @if (!empty($data['perihal']) || !empty($data['lampiran']))
         <table class="data-table" style="margin-bottom: 20px;">
@@ -30,30 +42,14 @@
 
     {{-- BLOK DETAIL UNTUK SURAT BALASAN --}}
     @if ($jenisSurat->kode === 'SBALASAN')
-        <table class="data-table" style="margin-bottom: 15px;">
-            <tr>
-                <td class="label" style="width: 20%;">Kepada Yth.</td>
-                <td class="separator">:</td>
-                <td class="value">{{ $data['kepada'] ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Alamat Tujuan</td>
-                <td class="separator">:</td>
-                <td class="value">{{ $data['alamat_tujuan'] ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label">Perihal/Subject</td>
-                <td class="separator">:</td>
-                <td class="value">{{ $data['perihal'] ?? 'Balasan surat' }}</td>
-            </tr>
-            @if (!empty($data['nomor_rujukan']))
-                <tr>
-                    <td class="label">Menjawab Surat</td>
-                    <td class="separator">:</td>
-                    <td class="value">Nomor {{ $data['nomor_rujukan'] }}</td>
-                </tr>
+        <p class="no-indent" style="margin-bottom: 18px;">
+            Kepada Yth.<br>
+            <strong>{{ $data['kepada'] ?? '-' }}</strong><br>
+            @if (!empty($data['alamat_tujuan']))
+                {{ $data['alamat_tujuan'] }}<br>
             @endif
-        </table>
+            di Tempat
+        </p>
     @endif
 
     {{-- KEPADA (untuk undangan/surat keluar) --}}
@@ -72,10 +68,23 @@
     {{-- SALAM PEMBUKA --}}
     <p class="no-indent">{{ $sections['salam_pembuka'] ?? 'Dengan hormat,' }}</p>
 
+    @if ($jenisSurat->kode === 'SBALASAN' && !empty($nomorSuratMasuk))
+        <p>
+            Menjawab surat Saudara Nomor <strong>{{ $nomorSuratMasuk }}</strong>
+            @if ($tanggalSuratMasukText) tanggal <strong>{{ $tanggalSuratMasukText }}</strong>@endif
+            @if (!empty($data['perihal'])) perihal <strong>{{ $data['perihal'] }}</strong>@endif,
+            dengan ini kami sampaikan hal-hal sebagai berikut.
+        </p>
+    @endif
+
     {{-- BODY / ISI SURAT --}}
-    @if (!empty($sections['body']))
+    @if (!empty($sections['body']) && !($jenisSurat->kode === 'SBALASAN' && !empty($nomorSuratMasuk)))
         <p>{{ $sections['body'] }}</p>
     @endif
+
+    @foreach ($isiParagraf as $paragraf)
+        <p>{{ $paragraf }}</p>
+    @endforeach
 
     {{-- KONTEN KHUSUS UNDANGAN --}}
     @if ($jenisSurat->kode === 'SUNDGN' && !empty($data['agenda']))

@@ -10,19 +10,24 @@
     ];
 
     $tanggalSurat = $suratTerbit->tanggal_terbit ?? now();
+    $tanggalSuratText = \Carbon\Carbon::parse($tanggalSurat)->locale(config('app.locale', 'id'))->translatedFormat('d F Y');
 
     // Singkirkan prefiks "DESA" agar jabatan tidak ganda
     $desaNamaRaw = $data['desa_info']['nama'] ?? config('app.desa.nama', 'Desa');
-    $desaNama = trim(preg_replace('/^desa\s+/i', '', $desaNamaRaw));
+    $desaNama = trim(preg_replace('/^(desa|kelurahan)\s+/i', '', $desaNamaRaw));
 @endphp
 
-<div class="signature-block right">
-    <p class="tempat-tanggal">
-        {{ $desaNama }}, {{ $tanggalSurat->translatedFormat('d F Y') }}
-    </p>
-    <p class="jabatan">{{ strtoupper($kasi['jabatan']) }}</p>
-    <p class="nama">{{ strtoupper($kasi['nama']) }}</p>
-    @if (!empty($kasi['nip']))
-        <p class="nip">NIP. {{ $kasi['nip'] }}</p>
-    @endif
-</div>
+<table class="signature-table">
+    <tr>
+        <td class="signature-spacer"></td>
+        <td class="signature-cell">
+            <p class="tempat-tanggal">{{ $desaNama }}, {{ $tanggalSuratText }}</p>
+            <p class="jabatan">{{ strtoupper($kasi['jabatan']) }}</p>
+            <div class="ruang-ttd"></div>
+            <p class="nama">{{ strtoupper($kasi['nama']) }}</p>
+            @if (!empty($kasi['nip']))
+                <p class="nip">NIP. {{ $kasi['nip'] }}</p>
+            @endif
+        </td>
+    </tr>
+</table>

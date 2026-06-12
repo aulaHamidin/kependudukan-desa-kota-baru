@@ -79,6 +79,55 @@ class StoreSuratTerbitRequest extends BaseRequest
                 'string',
                 'max:1000'
             ],
+            'data_surat' => [
+                'nullable',
+                'array',
+            ],
+            'data_surat.*' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+            'kepada' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'alamat_tujuan' => [
+                'nullable',
+                'string',
+                'max:500',
+            ],
+            'perihal' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'lampiran' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'nomor_rujukan' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'nomor_surat_masuk' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+            'tanggal_surat_masuk' => [
+                'nullable',
+                'date',
+                'date_format:Y-m-d',
+            ],
+            'isi_balasan' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
             'masa_berlaku_khusus' => [
                 'nullable',
                 'integer',
@@ -126,6 +175,15 @@ class StoreSuratTerbitRequest extends BaseRequest
             'keperluan' => 'keperluan surat',
             'tanggal_terbit' => 'tanggal terbit',
             'keterangan_tambahan' => 'keterangan tambahan',
+            'data_surat' => 'data tambahan surat',
+            'kepada' => 'kepada',
+            'alamat_tujuan' => 'alamat tujuan',
+            'perihal' => 'perihal',
+            'lampiran' => 'lampiran',
+            'nomor_rujukan' => 'nomor rujukan',
+            'nomor_surat_masuk' => 'nomor surat masuk',
+            'tanggal_surat_masuk' => 'tanggal surat masuk',
+            'isi_balasan' => 'isi balasan',
             'masa_berlaku_khusus' => 'masa berlaku khusus'
         ];
     }
@@ -172,6 +230,80 @@ class StoreSuratTerbitRequest extends BaseRequest
 
             return false;
         });
+
+        $validator->after(function ($validator) {
+            $jenisSurat = JenisSurat::where('kode', $this->input('jenis_surat_kode'))->first();
+            if (!$jenisSurat) {
+                return;
+            }
+
+            foreach ($jenisSurat->getSection('required_fields', []) as $field) {
+                if (!is_string($field) || $this->isAutoResolvedTemplateField($field)) {
+                    continue;
+                }
+
+                $value = $this->input("data_surat.{$field}", $this->input($field));
+                if ($value === null || $value === '') {
+                    $label = JenisSurat::FIELD_LABELS[$field] ?? str($field)->replace('_', ' ')->title()->toString();
+                    $errorKey = in_array($field, $this->topLevelTemplateFields(), true)
+                        ? $field
+                        : "data_surat.{$field}";
+
+                    $validator->errors()->add($errorKey, "Field {$label} wajib diisi.");
+                }
+            }
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function topLevelTemplateFields(): array
+    {
+        return [
+            'kepada',
+            'alamat_tujuan',
+            'perihal',
+            'lampiran',
+            'nomor_rujukan',
+            'nomor_surat_masuk',
+            'tanggal_surat_masuk',
+            'isi_balasan',
+            'keterangan_tambahan',
+        ];
+    }
+
+    private function isAutoResolvedTemplateField(string $field): bool
+    {
+        return in_array($field, [
+            'nama_lengkap',
+            'nik',
+            'no_kk',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'tanggal_lahir_text',
+            'tgl_lahir',
+            'tempat_tanggal_lahir',
+            'bin_binti',
+            'jenis_kelamin',
+            'agama',
+            'pekerjaan',
+            'pendidikan',
+            'status_kawin',
+            'status_perkawinan',
+            'kewarganegaraan',
+            'alamat',
+            'alamat_kk',
+            'alamat_rt_rw',
+            'rt',
+            'rw',
+            'desa',
+            'kecamatan',
+            'kabupaten',
+            'provinsi',
+            'tujuan',
+            'keperluan',
+        ], true);
     }
 
     /**
@@ -190,6 +322,22 @@ class StoreSuratTerbitRequest extends BaseRequest
         if ($this->has('keperluan')) {
             $this->merge([
                 'keperluan' => trim($this->keperluan)
+            ]);
+        }
+
+        foreach (['kepada', 'alamat_tujuan', 'perihal', 'lampiran', 'nomor_rujukan', 'nomor_surat_masuk', 'tanggal_surat_masuk', 'isi_balasan'] as $field) {
+            if ($this->has($field) && is_string($this->input($field))) {
+                $this->merge([
+                    $field => trim((string) $this->input($field)),
+                ]);
+            }
+        }
+
+        if ($this->has('data_surat') && is_array($this->input('data_surat'))) {
+            $this->merge([
+                'data_surat' => collect($this->input('data_surat'))
+                    ->map(fn($value) => is_string($value) ? trim($value) : $value)
+                    ->toArray(),
             ]);
         }
     }

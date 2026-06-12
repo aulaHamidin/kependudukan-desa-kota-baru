@@ -18,9 +18,3 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Jenis Surat API
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/jenis-surat/{kode}', [\App\Http\Controllers\Surat\SuratTerbitController::class, 'getJenisSuratDetails'])
-        ->name('api.jenis-surat.details');
-});
-

@@ -11,6 +11,7 @@ use App\Services\{SuratTerbitService, PdfGeneratorService};
 use App\Models\{SuratTerbit, JenisSurat, Penduduk};
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Log, DB};
 use Illuminate\View\View;
@@ -41,13 +42,14 @@ class SuratTerbitController extends Controller
      */
     public function index(Request $request): View
     {
+        $filters = [];
+
         try {
             $this->authorize('viewAny', SuratTerbit::class);
 
             $filters = $request->only([
                 'status',
                 'jenis_surat_kode',
-                'penduduk_search',
                 'tanggal_dari',
                 'tanggal_sampai',
                 'search'
@@ -70,11 +72,12 @@ class SuratTerbitController extends Controller
                 'BATAL' => 'Dibatalkan'
             ];
 
-            // Statistik untuk summary cards
+            // Statistik untuk summary cards, scoped sesuai wilayah user
+            $statsQuery = SuratTerbit::query()->forTerritory(Auth::user());
             $stats = [
-                'total'  => $surats->total(),
-                'aktif'  => SuratTerbit::where('status', 'AKTIF')->count(),
-                'batal'  => SuratTerbit::where('status', 'BATAL')->count(),
+                'total'  => (clone $statsQuery)->count(),
+                'aktif'  => (clone $statsQuery)->where('status', 'AKTIF')->count(),
+                'batal'  => (clone $statsQuery)->where('status', 'BATAL')->count(),
             ];
 
             return view('surat.terbit.index', compact(
@@ -95,7 +98,11 @@ class SuratTerbitController extends Controller
 
             return view('surat.terbit.index')
                 ->with('error', 'Terjadi kesalahan saat memuat data surat.')
-                ->with('surats', new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15));
+                ->with('surats', new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15))
+                ->with('filters', $filters)
+                ->with('jenisSuratOptions', [])
+                ->with('statusOptions', ['AKTIF' => 'Aktif', 'BATAL' => 'Dibatalkan'])
+                ->with('stats', ['total' => 0, 'aktif' => 0, 'batal' => 0]);
         }
     }
 
@@ -165,6 +172,22 @@ class SuratTerbitController extends Controller
 
             return back()->withInput()
                 ->with('warning', $e->getMessage());
+        } catch (QueryException $e) {
+            $isDuplicateNomor = $this->isDuplicateNomorSurat($e);
+
+            Log::error('SuratTerbit store database failed', [
+                'user_id' => Auth::id(),
+                'duplicate_nomor' => $isDuplicateNomor,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->withInput()
+                ->with(
+                    $isDuplicateNomor ? 'warning' : 'error',
+                    $isDuplicateNomor
+                        ? 'Nomor surat bentrok dengan data yang sudah ada. Silakan coba terbitkan ulang.'
+                        : 'Terjadi kesalahan database saat membuat surat. Silakan coba lagi.'
+                );
         } catch (Exception $e) {
             Log::error('SuratTerbit store failed', [
                 'user_id' => Auth::id(),
@@ -174,6 +197,18 @@ class SuratTerbitController extends Controller
             return back()->withInput()
                 ->with('error', 'Terjadi kesalahan saat membuat surat. Silakan coba lagi.');
         }
+    }
+
+    private function isDuplicateNomorSurat(QueryException $e): bool
+    {
+        $message = $e->getMessage();
+        $isIntegrityError = (string) $e->getCode() === '23000'
+            || in_array($e->errorInfo[1] ?? null, [1062, 19, 2067], true);
+
+        return $isIntegrityError
+            && (str_contains($message, 'surat_terbit_nomor_surat_unique')
+            || str_contains($message, 'Duplicate entry')
+            || str_contains($message, 'nomor_surat'));
     }
 
     /**
@@ -271,6 +306,37 @@ class SuratTerbitController extends Controller
             ]);
 
             return back()->with('error', 'Gagal mengunduh PDF karena kendala teknis.');
+        }
+    }
+
+    /**
+     * Regenerate private PDF from the latest Blade template without changing surat data.
+     */
+    public function regeneratePdf(SuratTerbit $suratTerbit): RedirectResponse
+    {
+        try {
+            $this->authorize('regeneratePdf', $suratTerbit);
+
+            $oldFilePath = $suratTerbit->file_path;
+            if ($oldFilePath) {
+                rescue(fn() => $this->pdfService->deletePdf($oldFilePath), false, report: false);
+            }
+
+            GenerateSuratPdfJob::dispatchForSurat($suratTerbit, [], true);
+
+            return redirect()->route('surat.terbit.show', $suratTerbit)
+                ->with('success', 'PDF sedang dibuat ulang menggunakan template terbaru.')
+                ->with('surat_generated', true);
+        } catch (AuthorizationException $e) {
+            abort(403, 'Anda tidak memiliki akses untuk membuat ulang PDF surat ini.');
+        } catch (Exception $e) {
+            Log::error('SuratTerbit regenerate PDF failed', [
+                'user_id' => Auth::id(),
+                'surat_id' => $suratTerbit->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal membuat ulang PDF karena kendala teknis.');
         }
     }
 
@@ -433,12 +499,17 @@ class SuratTerbitController extends Controller
                 return response()->json(['error' => 'Jenis surat tidak aktif.'], 404);
             }
 
+            $sections = $jenisSurat->getSections();
+
             return response()->json([
+                'kode'              => $jenisSurat->kode,
+                'nama'              => $jenisSurat->nama,
                 'masa_berlaku_hari' => $jenisSurat->masa_berlaku_hari,
                 'deskripsi'         => $jenisSurat->deskripsi,
                 'keterangan'        => $jenisSurat->keterangan,
                 'template_category' => $jenisSurat->template_category,
-                'required_fields'   => $jenisSurat->getSection('required_fields', []),
+                'required_fields'   => $sections['required_fields'] ?? [],
+                'dynamic_fields'    => $this->resolveDynamicFields($jenisSurat, $sections),
                 'is_ready'          => $jenisSurat->isReadyForGeneration(),
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -469,6 +540,88 @@ class SuratTerbitController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Resolve dynamic request fields required by hybrid templates.
+     *
+     * @param array<string, mixed> $sections
+     * @return array<int, array{name:string,label:string,required:bool}>
+     */
+    private function resolveDynamicFields(JenisSurat $jenisSurat, array $sections): array
+    {
+        $sectionKeys = [
+            'data_fields',
+            'additional_fields',
+            'detail_fields',
+            'activity_fields',
+            'related_fields',
+        ];
+
+        $baseFields = [
+            'nama_lengkap',
+            'nik',
+            'no_kk',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'tgl_lahir',
+            'tanggal_lahir_text',
+            'tempat_tanggal_lahir',
+            'bin_binti',
+            'jenis_kelamin',
+            'agama',
+            'pekerjaan',
+            'pendidikan',
+            'status_kawin',
+            'status_perkawinan',
+            'kewarganegaraan',
+            'alamat',
+            'alamat_kk',
+            'alamat_rt_rw',
+            'rt',
+            'rw',
+            'desa',
+            'kecamatan',
+            'kabupaten',
+            'provinsi',
+            'tujuan',
+            'keperluan',
+        ];
+
+        $fields = [];
+        foreach ($sectionKeys as $key) {
+            $sectionFields = $sections[$key] ?? [];
+            if (is_array($sectionFields)) {
+                $fields = array_merge($fields, $sectionFields);
+            }
+        }
+
+        if ($jenisSurat->template_category === 'internal') {
+            $fields = array_merge($fields, [
+                'kepada',
+                'alamat_tujuan',
+                'perihal',
+                'lampiran',
+                'nomor_rujukan',
+                'nomor_surat_masuk',
+                'tanggal_surat_masuk',
+                'isi_balasan',
+            ]);
+        }
+
+        $requiredFields = $sections['required_fields'] ?? [];
+        $fieldLabels = $jenisSurat->getFieldLabels();
+
+        return collect($fields)
+            ->filter(fn($field) => is_string($field) && !in_array($field, $baseFields, true))
+            ->unique()
+            ->values()
+            ->map(fn(string $field) => [
+                'name' => $field,
+                'label' => $fieldLabels[$field] ?? str($field)->replace('_', ' ')->title()->toString(),
+                'required' => in_array($field, $requiredFields, true),
+            ])
+            ->all();
     }
 
     /**

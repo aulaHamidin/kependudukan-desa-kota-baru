@@ -75,6 +75,7 @@ class SuratTerbit extends Model implements TerritoryAware
         'cancelled_by',
         'cancelled_at',
         'created_by',
+        'updated_by',
     ];
 
     protected $casts = [

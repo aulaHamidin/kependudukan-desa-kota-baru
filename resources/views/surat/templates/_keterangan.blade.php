@@ -10,6 +10,19 @@
 @extends('surat.templates._layout')
 
 @section('content')
+    @php
+        $keperluan = trim((string) ($data['tujuan'] ?? '...................................................'));
+        $keperluan = preg_replace('/^\s*(untuk\s+keperluan|keperluan)\s+/i', '', $keperluan);
+        $purposeLabel = rtrim((string) ($sections['purpose_label'] ?? 'Surat ini dibuat untuk keperluan'), " .");
+    @endphp
+
+    @if ($jenisSurat->kode === 'SKD')
+        @include('surat.templates.partials._keterangan_domisili')
+    @elseif ($jenisSurat->kode === 'SKTM')
+        @include('surat.templates.partials._keterangan_tidak_mampu')
+    @elseif ($jenisSurat->kode === 'SKU')
+        @include('surat.templates.partials._keterangan_usaha')
+    @else
     {{-- INTRO --}}
     <p class="no-indent">{{ $sections['intro'] ?? 'Yang bertanda tangan di bawah ini, Kepala Desa, menerangkan bahwa:' }}</p>
 
@@ -32,8 +45,9 @@
     {{-- TUJUAN/KEPERLUAN --}}
     @if ($sections['show_purpose'] ?? true)
         <p>
-            {{ $sections['purpose_label'] ?? 'Surat ini dibuat untuk keperluan' }}
-            <strong>{{ $data['tujuan'] ?? '...................................................' }}</strong>.
+            {{ $purposeLabel }}
+            <strong>{{ $keperluan }}</strong>.
         </p>
+    @endif
     @endif
 @endsection

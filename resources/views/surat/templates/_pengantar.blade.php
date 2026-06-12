@@ -9,6 +9,13 @@
 @extends('surat.templates._layout')
 
 @section('content')
+    @php
+        $keperluan = trim((string) ($data['keperluan'] ?? ($data['tujuan'] ?? 'pengurusan administrasi')));
+        $keperluan = preg_replace('/^\s*(untuk\s+keperluan|keperluan)\s+/i', '', $keperluan);
+        $targetInstansi = $data['instansi_tujuan'] ?? ($sections['target_instansi'] ?? null);
+        $purposeLabel = rtrim((string) ($sections['purpose_label'] ?? 'Surat ini dibuat untuk keperluan'), " .");
+    @endphp
+
     {{-- INTRO --}}
     <p class="no-indent">
         {{ $sections['intro'] ?? 'Yang bertanda tangan di bawah ini, Kepala Desa, dengan ini memberikan pengantar bahwa:' }}
@@ -43,16 +50,22 @@
 
     {{-- TUJUAN INSTANSI --}}
     @if ($sections['show_purpose'] ?? true)
-        <p>
-            {{ $sections['purpose_label'] ?? 'Surat pengantar ini ditujukan kepada' }}
-            <strong>{{ $data['instansi_tujuan'] ?? ($data['tujuan'] ?? 'instansi terkait') }}</strong>
-            untuk keperluan {{ $data['keperluan'] ?? 'pengurusan administrasi' }}.
-        </p>
+        @if ($targetInstansi)
+            <p>
+                Surat ini ditujukan kepada <strong>{{ $targetInstansi }}</strong>
+                untuk keperluan <strong>{{ $keperluan }}</strong>.
+            </p>
+        @else
+            <p>
+                {{ $purposeLabel }}
+                <strong>{{ $keperluan }}</strong>.
+            </p>
+        @endif
     @endif
 @endsection
 
 @section('closing')
     <p class="mt-2">
-        Demikian surat pengantar ini dibuat, atas perhatian dan kerjasamanya diucapkan terima kasih.
+        {{ $sections['closing'] ?? 'Demikian surat ini dibuat, atas perhatian dan kerja samanya diucapkan terima kasih.' }}
     </p>
 @endsection
